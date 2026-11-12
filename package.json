@@ -1,0 +1,16 @@
+{
+  "name": "highlight",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:ext": "pnpm --filter extension dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup": "npm:@rollup/wasm-node@^4.28.0"
+    }
+  }
+}

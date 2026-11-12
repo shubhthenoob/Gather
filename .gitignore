@@ -1,0 +1,9 @@
+node_modules
+.next
+dist
+.env
+.env.local
+*.pem
+supabase/.temp
+next-env.d.ts
+*.tsbuildinfo
