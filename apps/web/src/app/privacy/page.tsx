@@ -38,12 +38,12 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">Your choices</h2>
-          <p>You can edit or delete any highlight or note at any time, and export everything as Markdown from the web app. Signing out removes your session from the browser. To delete your account and all of its data, contact us at the address below.</p>
+          <p>You can edit or delete any highlight or note at any time, and export everything as Markdown from the web app. Signing out removes your session from the browser. To delete your account and all of its data, email us at the address below.</p>
         </section>
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">Contact</h2>
-          <p>Questions or deletion requests: open an issue at <a className="underline" href="https://github.com/shubhthenoob/Gather/issues">github.com/shubhthenoob/Gather</a>.</p>
+          <p>Questions or deletion requests: email <a className="underline" href="mailto:shubhradia33@gmail.com">shubhradia33@gmail.com</a>, or open an issue at <a className="underline" href="https://github.com/shubhthenoob/Gather/issues">github.com/shubhthenoob/Gather</a>.</p>
         </section>
       </div>
     </main>
