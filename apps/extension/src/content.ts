@@ -42,7 +42,7 @@ function main() {
   fab.type = "button";
   fab.className = "fab";
   fab.title = `Open your library at ${new URL(__WEB_URL__).host}`;
-  fab.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.2 3.3a1 1 0 0 1 1.4 0l4.1 4.1a1 1 0 0 1 0 1.4l-8.9 8.9-5.5-5.5 8.9-8.9ZM5.6 13.6l4.8 4.8-1.6 1.6H3v-2.3l2.6-4.1Z"/><rect x="3" y="21" width="18" height="1.6" rx=".8" fill="currentColor"/></svg><span class="fab-badge" hidden></span>`;
+  fab.innerHTML = `<svg viewBox="5 3 24 24" width="26" height="26" aria-hidden="true"><path d="M9 22l3-9 7 7-9 3z" fill="#202124"/><path d="M13 12l6-6 7 7-6 6z" fill="#fff" stroke="#202124" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="fab-badge" hidden></span>`;
   fab.addEventListener("click", () => window.open(__WEB_URL__, "_blank", "noopener"));
   shadow.appendChild(fab);
   const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
