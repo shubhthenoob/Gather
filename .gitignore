@@ -8,3 +8,4 @@ supabase/.temp
 next-env.d.ts
 *.tsbuildinfo
 *.zip
+apps/extension/store-icon-128.png

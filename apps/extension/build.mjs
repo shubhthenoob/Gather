@@ -5,7 +5,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { createHash, createPublicKey } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { writeIcons } from "./scripts/icons.mjs";
+import { writeIcons, writeStoreIcon } from "./scripts/icons.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, "dist");
@@ -91,4 +91,6 @@ if (store) {
     execFileSync("zip", ["-r", "-q", zip, "."], { cwd: dist });
   }
   console.log(`Store package: ${zip}`);
+  writeStoreIcon(join(root, "store-icon-128.png"));
+  console.log(`Store icon: ${join(root, "store-icon-128.png")}`);
 }
