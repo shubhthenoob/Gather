@@ -4,6 +4,7 @@ import type { Draft, ListResult, Request, SaveResult, TabMessage, UserInfo } fro
 
 declare const __SUPABASE_URL__: string;
 declare const __SUPABASE_ANON_KEY__: string;
+declare const __WEB_URL__: string;
 
 // ---- Supabase client backed by chrome.storage so the session survives worker restarts ----
 const storage = {
@@ -278,4 +279,8 @@ chrome.runtime.onMessage.addListener((msg: Request, sender, reply) => {
 chrome.alarms.create("sync", { periodInMinutes: 1 });
 chrome.alarms.onAlarm.addListener((a) => { if (a.name === "sync") void flushQueue(); });
 chrome.runtime.onStartup.addListener(() => void flushQueue());
-chrome.runtime.onInstalled.addListener(() => void flushQueue());
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  // First install: open the web library so people see where their highlights live.
+  if (reason === chrome.runtime.OnInstalledReason.INSTALL) void chrome.tabs.create({ url: `${__WEB_URL__}/login?welcome=1` });
+  void flushQueue();
+});

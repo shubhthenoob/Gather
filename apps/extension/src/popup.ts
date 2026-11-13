@@ -70,6 +70,9 @@ async function render() {
 }
 
 ($("open") as HTMLAnchorElement).href = __WEB_URL__;
+const site = $("site") as HTMLAnchorElement;
+site.href = __WEB_URL__;
+site.textContent = new URL(__WEB_URL__).host;
 $("signout").addEventListener("click", async () => {
   await send({ type: "signOut" });
   await render();

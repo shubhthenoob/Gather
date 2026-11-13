@@ -41,16 +41,16 @@ function main() {
   const fab = document.createElement("button");
   fab.type = "button";
   fab.className = "fab";
-  fab.title = "Open my Gather library";
+  fab.title = `Open your library at ${new URL(__WEB_URL__).host}`;
   fab.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.2 3.3a1 1 0 0 1 1.4 0l4.1 4.1a1 1 0 0 1 0 1.4l-8.9 8.9-5.5-5.5 8.9-8.9ZM5.6 13.6l4.8 4.8-1.6 1.6H3v-2.3l2.6-4.1Z"/><rect x="3" y="21" width="18" height="1.6" rx=".8" fill="currentColor"/></svg><span class="fab-badge" hidden></span>`;
   fab.addEventListener("click", () => window.open(__WEB_URL__, "_blank", "noopener"));
   shadow.appendChild(fab);
   const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
   function updateFab() {
-    let text = "", alert = false, title = "Open my Gather library";
+    let text = "", alert = false, title = `Open your library at ${new URL(__WEB_URL__).host}`;
     if (!signedIn) { text = "!"; alert = true; title = "Gather: sign in from the extension popup to sync"; }
     else if (unresolved.size) { text = "!"; alert = true; title = `Gather: ${unresolved.size} saved highlight(s) could not be found on this page`; }
-    else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open your library`; }
+    else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open your library at ${new URL(__WEB_URL__).host}`; }
     fabBadge.hidden = !text;
     fabBadge.textContent = text;
     fabBadge.classList.toggle("alert", alert);
@@ -206,7 +206,8 @@ function main() {
   function finishSave(res: Extract<SaveResult, { ok: true }>) {
     upsertLocal(res.highlight);
     if (res.existing) toast("Already highlighted. You can edit its note.");
-    else toast(res.queued ? "Saved offline. It will sync when you're back online." : "Highlight saved");
+    else if (res.queued) toast("Saved offline. It will sync when you're back online.");
+    else toast("Highlight saved", { label: "View in library", run: () => window.open(`${__WEB_URL__}/day/today`, "_blank", "noopener") });
   }
 
   async function saveDraft(draft: Draft) {

@@ -20,6 +20,8 @@
     .stack > * + * { margin-top:8px; }
     .warn { color:#e37400; }
     [hidden] { display:none!important; }
+    .hint { margin:0; font-size:12px; text-align:center; }
+    .hint a { color:inherit; font-weight:600; }
   </style>
 </head>
 <body>
@@ -28,6 +30,7 @@
   <section id="page"></section>
   <section class="stack">
     <a id="open" class="btn" target="_blank" rel="noopener">Open my library</a>
+    <p class="muted hint">Everything you save lives at <a id="site" target="_blank" rel="noopener"></a>, organised by date and searchable.</p>
     <button id="signout" hidden>Sign out</button>
   </section>
   <script src="popup.js"></script>
