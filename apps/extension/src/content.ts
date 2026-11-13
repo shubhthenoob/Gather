@@ -48,13 +48,15 @@ function main() {
   const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
   function updateFab() {
     let text = "", alert = false, title = `Open your library at ${new URL(__WEB_URL__).host}`;
-    if (!signedIn) { text = "!"; alert = true; title = "Gather: sign in from the extension popup to sync"; }
+    if (!signedIn) { title = "Gather: sign in from the extension popup to sync"; }
     else if (unresolved.size) { text = "!"; alert = true; title = `Gather: ${unresolved.size} saved highlight(s) could not be found on this page`; }
     else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open your library at ${new URL(__WEB_URL__).host}`; }
     fabBadge.hidden = !text;
     fabBadge.textContent = text;
     fabBadge.classList.toggle("alert", alert);
     fab.title = title;
+    // Stay tucked against the edge unless this page has something to show.
+    fab.classList.toggle("peek", !text);
   }
 
   let panel: HTMLElement | null = null;
@@ -93,14 +95,14 @@ function main() {
     return b;
   }
 
-  function toast(message: string, action?: { label: string; run: () => void }) {
+  function toast(message: string, action?: { label: string; run: () => void }, ms = action ? 8000 : 2500) {
     shadow.querySelector(".toast")?.remove();
     clearTimeout(toastTimer);
     const t = el("div", "toast");
     t.append(el("span", "", message));
     if (action) t.append(button(action.label, () => { t.remove(); action.run(); }, "link"));
     shadow.appendChild(t);
-    toastTimer = setTimeout(() => t.remove(), action ? 8000 : 2500);
+    toastTimer = setTimeout(() => t.remove(), ms);
   }
 
   // ---------- Capture ----------
@@ -207,7 +209,17 @@ function main() {
     upsertLocal(res.highlight);
     if (res.existing) toast("Already highlighted. You can edit its note.");
     else if (res.queued) toast("Saved offline. It will sync when you're back online.");
-    else toast("Highlight saved", { label: "View in library", run: () => window.open(`${__WEB_URL__}/day/today`, "_blank", "noopener") });
+    else void showSavedToast();
+  }
+
+  // Point to the library on the first few saves only; after that, a plain confirmation.
+  const LIBRARY_HINTS = 3;
+  async function showSavedToast() {
+    let shown = 0;
+    try { shown = ((await chrome.storage.local.get("libraryHints")).libraryHints as number | undefined) ?? 0; } catch { /* orphaned */ }
+    if (shown >= LIBRARY_HINTS) { toast("Highlight saved"); return; }
+    try { await chrome.storage.local.set({ libraryHints: shown + 1 }); } catch { /* ignore */ }
+    toast("Highlight saved", { label: "View in library", run: () => window.open(`${__WEB_URL__}/day/today`, "_blank", "noopener") }, 4000);
   }
 
   async function saveDraft(draft: Draft) {

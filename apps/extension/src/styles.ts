@@ -52,6 +52,8 @@ textarea:focus { border-color: #fbbc04; }
   box-shadow: 0 4px 14px rgba(0,0,0,.3); transition: width .15s ease, background .15s ease;
 }
 .fab:hover { width: 52px; background: #6a48f5; }
+.fab.peek { transform: translate(34px, -50%); opacity: .45; transition: transform .2s ease, opacity .2s ease; }
+.fab.peek:hover, .fab.peek:focus-visible { transform: translateY(-50%); opacity: 1; }
 .fab-badge {
   position: absolute; top: -8px; left: -8px; min-width: 20px; height: 20px; padding: 0 5px;
   border-radius: 10px; border: 2px solid #fff; background: #202124; color: #fff;
