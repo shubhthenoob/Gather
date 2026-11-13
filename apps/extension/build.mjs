@@ -1,4 +1,5 @@
-// Bundles the extension into dist/ with esbuild. Usage: node build.mjs [--watch]
+// Bundles the extension into dist/ with esbuild. Usage: node build.mjs [--watch | --store]
+// --store: omit the manifest "key" (the Chrome Web Store rejects it) and write gather-extension.zip.
 import { build, context } from "esbuild";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createHash, createPublicKey } from "node:crypto";
@@ -9,6 +10,7 @@ import { writeIcons } from "./scripts/icons.mjs";
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, "dist");
 const watch = process.argv.includes("--watch");
+const store = process.argv.includes("--store");
 
 function readEnv(file) {
   if (!existsSync(file)) return {};
@@ -39,7 +41,9 @@ writeIcons(join(dist, "icons"));
 // Stable extension ID: embed the public key from key.pem (run `pnpm keygen` once).
 const manifest = JSON.parse(readFileSync(join(root, "public/manifest.json"), "utf8"));
 const pem = join(root, "key.pem");
-if (existsSync(pem)) {
+if (store) {
+  console.log("Store build: manifest key omitted. The Web Store assigns the extension ID.");
+} else if (existsSync(pem)) {
   const der = createPublicKey(readFileSync(pem)).export({ type: "spki", format: "der" });
   manifest.key = der.toString("base64");
   const id = [...createHash("sha256").update(der).digest("hex").slice(0, 32)]
@@ -75,4 +79,16 @@ if (watch) {
 } else {
   await Promise.all(configs.map((c) => build(c)));
   console.log(`Built to ${dist}. Load it via chrome://extensions > Load unpacked.`);
+}
+
+if (store) {
+  const { execFileSync } = await import("node:child_process");
+  const zip = join(root, "gather-extension.zip");
+  rmSync(zip, { force: true });
+  if (process.platform === "win32") {
+    execFileSync("powershell", ["-NoProfile", "-Command", `Compress-Archive -Path '${dist}\*' -DestinationPath '${zip}'`]);
+  } else {
+    execFileSync("zip", ["-r", "-q", zip, "."], { cwd: dist });
+  }
+  console.log(`Store package: ${zip}`);
 }

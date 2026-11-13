@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
+    "build:store": "node build.mjs --store",
     "dev": "node build.mjs --watch",
     "keygen": "node scripts/keygen.mjs",
     "test": "vitest run",
