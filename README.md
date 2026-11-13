@@ -2,7 +2,7 @@
 
 > Keep what matters. Find it later.
 
-Capture from anywhere. Remember everything. Find it when needed.
+The internet is full of interesting things. Gather the ones that matter. A personal knowledge journal that captures what you read, remembers what you highlight and keeps your thoughts organised automatically.
 
 A Chrome extension saves text highlights and notes from any webpage. A Next.js web app shows them as automatic date-wise pages, grouped by website, alongside standalone notes, with search and Markdown export. Supabase provides Google sign-in, Postgres and Row Level Security.
 
