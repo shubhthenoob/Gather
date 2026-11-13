@@ -1,4 +1,6 @@
-# Highlight
+# Gather
+
+> Keep what matters. Find it later.
 
 Capture from anywhere. Remember everything. Find it when needed.
 

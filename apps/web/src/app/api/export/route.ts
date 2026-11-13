@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   });
 
   const md = toMarkdown(highlights, notes, tz);
-  const filename = day ? `highlight-${day}.md` : `highlight-export-${new Date().toISOString().slice(0, 10)}.md`;
+  const filename = day ? `gather-${day}.md` : `gather-export-${new Date().toISOString().slice(0, 10)}.md`;
   return new NextResponse(md, {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",

@@ -33,6 +33,18 @@ export type ListResult = { signedIn: boolean; highlights: Highlight[]; offline?:
 export type TabMessage = { type: "refresh" } | { type: "status" };
 export type TabStatus = { painted: number; unresolved: number; total: number };
 
+/** True while this script still belongs to the installed extension (false after a reload/update). */
+export function extensionAlive(): boolean {
+  try { return !!chrome.runtime?.id; } catch { return false; }
+}
+
 export function send<T>(msg: Request): Promise<T> {
-  return chrome.runtime.sendMessage(msg) as Promise<T>;
+  // After the extension is reloaded, scripts left in open tabs throw synchronously here.
+  try {
+    // Orphaned copy: never settle, so no caller surfaces an "Uncaught (in promise)" error.
+    if (!extensionAlive()) return new Promise<T>(() => {});
+    return chrome.runtime.sendMessage(msg) as Promise<T>;
+  } catch {
+    return new Promise<T>(() => {});
+  }
 }

@@ -1,7 +1,9 @@
 import { canonicalizeUrl, domainOf, findQuote, isSupportedUrl, normalizeText, CONTEXT_LENGTH, type Highlight } from "@highlight/shared";
 import { buildIndex, offsetsToRange, rangeToOffsets, trimOffsets, xpathOf, UI_HOST_ID, type TextIndex } from "./anchor";
-import { send, type Draft, type ListResult, type SaveResult, type TabMessage, type TabStatus } from "./messages";
+import { send, extensionAlive, type Draft, type ListResult, type SaveResult, type TabMessage, type TabStatus } from "./messages";
 import { UI_CSS, PAGE_CSS } from "./styles";
+
+declare const __WEB_URL__: string;
 
 if (isSupportedUrl(location.href) && !document.getElementById(UI_HOST_ID)) main();
 
@@ -34,6 +36,26 @@ function main() {
   style.textContent = UI_CSS;
   shadow.appendChild(style);
   document.documentElement.appendChild(host);
+
+  // ---------- Floating side tab: opens the web app; badge shows page status ----------
+  const fab = document.createElement("button");
+  fab.type = "button";
+  fab.className = "fab";
+  fab.title = "Open my Gather library";
+  fab.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M15.2 3.3a1 1 0 0 1 1.4 0l4.1 4.1a1 1 0 0 1 0 1.4l-8.9 8.9-5.5-5.5 8.9-8.9ZM5.6 13.6l4.8 4.8-1.6 1.6H3v-2.3l2.6-4.1Z"/><rect x="3" y="21" width="18" height="1.6" rx=".8" fill="currentColor"/></svg><span class="fab-badge" hidden></span>`;
+  fab.addEventListener("click", () => window.open(__WEB_URL__, "_blank", "noopener"));
+  shadow.appendChild(fab);
+  const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
+  function updateFab() {
+    let text = "", alert = false, title = "Open my Gather library";
+    if (!signedIn) { text = "!"; alert = true; title = "Gather: sign in from the extension popup to sync"; }
+    else if (unresolved.size) { text = "!"; alert = true; title = `Gather: ${unresolved.size} saved highlight(s) could not be found on this page`; }
+    else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open your library`; }
+    fabBadge.hidden = !text;
+    fabBadge.textContent = text;
+    fabBadge.classList.toggle("alert", alert);
+    fab.title = title;
+  }
 
   let panel: HTMLElement | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -136,6 +158,7 @@ function main() {
       (i % 2 ? hlB : hlA).add(range);
     });
     void send({ type: "badge", painted: painted.size, unresolved: unresolved.size }).catch(() => {});
+    updateFab();
   }
 
   async function load() {
@@ -342,7 +365,8 @@ function main() {
   }).observe(document.body, { childList: true, subtree: true, characterData: true });
 
   // SPA navigation: content scripts cannot hook the page's history API, so watch the URL.
-  setInterval(() => {
+  const urlTimer = setInterval(() => {
+    if (!extensionAlive()) { teardown(); return; }
     const next = canonicalizeUrl(location.href);
     if (next !== canonical) {
       canonical = next;
@@ -354,7 +378,18 @@ function main() {
   }, 1000);
 
   // Pick up edits and deletions made in the web app.
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void load(); });
+  document.addEventListener("visibilitychange", () => {
+    if (!extensionAlive()) { teardown(); return; }
+    if (document.visibilityState === "visible") void load();
+  });
+
+  // The extension was reloaded: remove this orphaned copy's UI so the fresh one can take over.
+  function teardown() {
+    clearInterval(urlTimer);
+    host.remove();
+    pageStyle.remove();
+    hlA.clear(); hlB.clear(); hlActive.clear();
+  }
 
   chrome.runtime.onMessage.addListener((msg: TabMessage, _sender, reply) => {
     if (msg.type === "refresh") void load();

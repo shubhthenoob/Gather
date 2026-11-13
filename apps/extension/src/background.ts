@@ -133,10 +133,10 @@ async function updateQueueBadge() {
   if (n) {
     await chrome.action.setBadgeBackgroundColor({ color: "#9aa0a6" });
     await chrome.action.setBadgeText({ text: "…" });
-    await chrome.action.setTitle({ title: `Highlight: ${n} change${n === 1 ? "" : "s"} waiting to sync` });
+    await chrome.action.setTitle({ title: `Gather: ${n} change${n === 1 ? "" : "s"} waiting to sync` });
   } else {
     await chrome.action.setBadgeText({ text: "" });
-    await chrome.action.setTitle({ title: "Highlight" });
+    await chrome.action.setTitle({ title: "Gather" });
   }
 }
 
@@ -245,8 +245,8 @@ async function setTabBadge(tabId: number, painted: number, unresolved: number) {
   await chrome.action.setTitle({
     tabId,
     title: unresolved
-      ? `Highlight: ${painted} restored, ${unresolved} could not be found on this page`
-      : painted ? `Highlight: ${painted} highlight${painted === 1 ? "" : "s"} on this page` : "Highlight",
+      ? `Gather: ${painted} restored, ${unresolved} could not be found on this page`
+      : painted ? `Gather: ${painted} highlight${painted === 1 ? "" : "s"} on this page` : "Gather",
   });
 }
 

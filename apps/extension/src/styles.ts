@@ -45,4 +45,18 @@ textarea:focus { border-color: #fbbc04; }
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   padding: 10px 16px; display: flex; align-items: center;
 }
+.fab {
+  all: unset; position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 48px; display: flex; align-items: center; justify-content: center;
+  background: #7c5cff; color: #fff; border-radius: 12px 0 0 12px; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); transition: width .15s ease, background .15s ease;
+}
+.fab:hover { width: 52px; background: #6a48f5; }
+.fab-badge {
+  position: absolute; top: -8px; left: -8px; min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; border: 2px solid #fff; background: #202124; color: #fff;
+  font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; box-sizing: border-box;
+}
+.fab-badge.alert { background: #e8174a; }
+.fab-badge[hidden] { display: none; }
 `;

@@ -29,6 +29,6 @@ function renderDay(day: string, highlights: Highlight[], notes: Note[], timeZone
 
 export function toMarkdown(highlights: Highlight[], notes: Note[], timeZone: string): string {
   const days = groupByDay(highlights, notes, timeZone);
-  if (days.length === 0) return "# Highlight export\n\nNothing saved yet.\n";
+  if (days.length === 0) return "# Gather export\n\nNothing saved yet.\n";
   return days.map((d) => renderDay(d.day, d.highlights, d.notes, timeZone)).join("\n");
 }

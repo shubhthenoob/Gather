@@ -48,7 +48,7 @@ async function renderPage() {
   page.replaceChildren();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!isSupportedUrl(tab?.url)) {
-    page.append(text("p", "Highlight can't run on this page. Browser and Web Store pages are restricted.", "muted"));
+    page.append(text("p", "Gather can't run on this page. Browser and Web Store pages are restricted.", "muted"));
     return;
   }
   const queued = await send<number>({ type: "queueSize" });

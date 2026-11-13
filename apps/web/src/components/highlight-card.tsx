@@ -41,7 +41,12 @@ export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight
           </div>
         </div>
       ) : (
-        h.note && <p className="muted mt-3 whitespace-pre-wrap text-sm">{h.note}</p>
+        h.note && (
+          <div className="mt-3 flex gap-2 rounded-lg border-l-4 border-[var(--accent)] bg-black/[0.04] dark:bg-white/[0.06] px-3 py-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 shrink-0 text-[var(--accent)]" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+            <p className="whitespace-pre-wrap text-sm font-medium leading-relaxed">{h.note}</p>
+          </div>
+        )
       )}
 
       <footer className="mt-3 flex items-end justify-between gap-2">
