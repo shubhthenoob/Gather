@@ -25,6 +25,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   }
   return (
     <div className="mx-auto max-w-3xl">
+      <Link href="/day/today" className="muted mb-3 inline-flex items-center gap-1 text-sm hover:underline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+        Back to Today
+      </Link>
       <h1 className="mb-1 text-2xl font-semibold">Search</h1>
       <p className="muted mb-6 text-sm">{q ? `${results.length} result${results.length === 1 ? "" : "s"} for “${q}”` : "Type in the search box to find highlights and notes."}</p>
       <ul className="space-y-3">

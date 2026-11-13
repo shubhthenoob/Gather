@@ -8,7 +8,14 @@ import { formatDay, todayIn, type DayPage } from "@highlight/shared";
 export function SearchBox() {
   const router = useRouter();
   const params = useSearchParams();
+  const pathname = usePathname();
+  const onSearch = pathname === "/search";
   const [q, setQ] = useState(params.get("q") ?? "");
+  // Clearing leaves the search page and returns to Today.
+  const clear = () => {
+    setQ("");
+    if (onSearch) router.push("/day/today");
+  };
   return (
     <form
       onSubmit={(e) => {
@@ -18,7 +25,19 @@ export function SearchBox() {
       className="bordered panel flex w-full items-center gap-2 rounded-full border px-4 py-2.5 shadow-sm focus-within:border-[var(--accent)]"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="muted shrink-0"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your highlights and notes" className="w-full text-sm" aria-label="Search highlights and notes" />
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Escape") clear(); }}
+        placeholder="Search your highlights and notes"
+        className="w-full text-sm"
+        aria-label="Search highlights and notes"
+      />
+      {(q || onSearch) && (
+        <button type="button" onClick={clear} title="Clear search" aria-label="Clear search" className="muted shrink-0 rounded-full p-0.5 hover:bg-black/5 dark:hover:bg-white/10">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      )}
     </form>
   );
 }
