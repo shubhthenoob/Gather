@@ -7,6 +7,29 @@ export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight
   const [editing, setEditing] = useState(false);
   const [note, setNote] = useState(h.note ?? "");
   const [pending, start] = useTransition();
+  const [copied, setCopied] = useState(false);
+
+  // Copies the quote, the note (if any) and where it came from, ready to paste anywhere.
+  const copy = async () => {
+    const parts = [`“${h.selected_text.trim()}”`];
+    if (h.note?.trim()) parts.push(`Note: ${h.note.trim()}`);
+    parts.push(`— ${h.page_title || h.domain}\n${h.source_url}`);
+    const text = parts.join("\n\n");
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for browsers or contexts without the async clipboard API.
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   const save = () => start(async () => {
     await updateHighlightNote(h.id, note);
@@ -54,7 +77,14 @@ export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight
           <span className="block truncate font-medium">{h.page_title || h.domain}</span>
           <span className="muted">{h.domain} · {formatTime(h.created_at, timezone)}</span>
         </a>
-        <div className="flex shrink-0 gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+        <div className={`flex shrink-0 items-center gap-1 transition-opacity ${copied ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100"}`}>
+          <button onClick={copy} title={copied ? "Copied" : "Copy highlight"} aria-label="Copy highlight" className={`flex items-center gap-1 rounded-full p-1.5 text-xs hover:bg-black/5 dark:hover:bg-white/10 ${copied ? "text-[var(--accent)]" : "muted"}`}>
+            {copied ? (
+              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg><span className="font-medium">Copied</span></>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></svg>
+            )}
+          </button>
           <button onClick={() => setEditing(true)} title={h.note ? "Edit note" : "Add note"} className="muted rounded-full p-1.5 hover:bg-black/5 dark:hover:bg-white/10">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
           </button>
