@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <SignInButton />
           {error && <p className="mt-4 text-sm text-red-600">Sign-in failed. Please try again.</p>}
           <p className="muted mt-6 text-xs">
-            Bookmark <strong>gatherme.vercel.app</strong> to come back anytime · <Link href="/privacy" className="underline">Privacy</Link>
+            Bookmark <strong>gatherme.vercel.app</strong> to come back anytime · <Link href="/privacy" className="underline">Privacy</Link> · <Link href="/terms" className="underline">Terms</Link>
           </p>
         </div>
       </div>

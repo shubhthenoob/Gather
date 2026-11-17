@@ -7,6 +7,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-12 text-[15px] leading-relaxed">
       <Link href="/login" className="muted text-sm hover:underline">‹ Gather</Link>
+      <Link href="/terms" className="muted float-right text-sm hover:underline">Terms of Service</Link>
       <h1 className="mb-1 mt-4 text-3xl font-semibold">Privacy Policy</h1>
       <p className="muted mb-8 text-sm">Last updated: November 13, 2026</p>
 
