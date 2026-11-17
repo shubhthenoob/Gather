@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { Sidebar, SearchBox } from "@/components/sidebar";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
+import { ExtensionBridge } from "@/components/extension-bridge";
 import type { DayPage } from "@highlight/shared";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main className="min-w-0 flex-1 px-4 py-6 md:px-10">{children}</main>
       </div>
       <RealtimeRefresh userId={user.id} />
+      <ExtensionBridge />
     </div>
   );
 }

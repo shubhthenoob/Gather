@@ -53,6 +53,17 @@ async function signIn(): Promise<UserInfo | null> {
   return user;
 }
 
+/** Sign in with a one-time token handed over by the Gather website, so users only sign in once. */
+async function adoptSession(tokenHash: string): Promise<{ ok: boolean; user?: UserInfo | null }> {
+  const existing = await currentUser();
+  if (existing) return { ok: true, user: existing };
+  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
+  if (error) return { ok: false };
+  await broadcast({ type: "refresh" });
+  void flushQueue();
+  return { ok: true, user: await currentUser() };
+}
+
 async function broadcast(msg: TabMessage) {
   const tabs = await chrome.tabs.query({});
   for (const t of tabs) {
@@ -265,6 +276,7 @@ async function handle(msg: Request, sender: chrome.runtime.MessageSender): Promi
     case "update": return update(msg.id, msg.note);
     case "delete": return remove(msg.id);
     case "queueSize": return (await getQueue()).length;
+    case "adoptSession": return adoptSession(msg.tokenHash);
     case "badge":
       if (sender.tab?.id !== undefined) await setTabBadge(sender.tab.id, msg.painted, msg.unresolved);
       return null;

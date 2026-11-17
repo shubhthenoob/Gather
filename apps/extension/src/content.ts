@@ -409,5 +409,27 @@ function main() {
     if (msg.type === "status") reply({ painted: painted.size, unresolved: unresolved.size, total: highlights.length } satisfies TabStatus);
   });
 
+  // On the Gather website: if the extension isn't signed in yet, borrow the website's sign-in.
+  if (location.origin === new URL(__WEB_URL__).origin) {
+    let asked = false;
+    const askForSession = async () => {
+      if (asked) return;
+      const user = await send<unknown>({ type: "session" }).catch(() => "unknown");
+      if (user) return; // already signed in (or unreachable)
+      asked = true;
+      window.postMessage({ source: "gather-ext", type: "needSession" }, location.origin);
+    };
+    window.addEventListener("message", (e: MessageEvent) => {
+      if (e.source !== window || e.origin !== location.origin || e.data?.source !== "gather-web") return;
+      if (e.data.type === "bridgeReady") void askForSession();
+      if (e.data.type === "sessionToken" && typeof e.data.token_hash === "string") {
+        void send<{ ok: boolean }>({ type: "adoptSession", tokenHash: e.data.token_hash }).then((r) => {
+          if (r?.ok) { signedIn = true; void load(); }
+        });
+      }
+    });
+    void askForSession();
+  }
+
   void load();
 }

@@ -21,7 +21,8 @@ export type Request =
   | { type: "update"; id: string; note: string | null }
   | { type: "delete"; id: string }
   | { type: "badge"; painted: number; unresolved: number }
-  | { type: "queueSize" };
+  | { type: "queueSize" }
+  | { type: "adoptSession"; tokenHash: string };
 
 export type SaveResult =
   | { ok: true; highlight: Highlight; queued?: boolean; existing?: boolean }
