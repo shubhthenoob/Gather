@@ -7,7 +7,9 @@ export interface Post {
   sections: { heading?: string; paragraphs: string[]; list?: string[] }[];
 }
 
-export const POSTS: Post[] = [
+import { EXTRA_POSTS } from "./posts-extra";
+
+const BASE_POSTS: Post[] = [
   {
     slug: "how-to-highlight-text-on-any-website-in-chrome",
     title: "How to Highlight Text on Any Website in Chrome",
@@ -145,6 +147,9 @@ export const POSTS: Post[] = [
     ],
   },
 ];
+
+/** All articles, newest first. */
+export const POSTS: Post[] = [...EXTRA_POSTS, ...BASE_POSTS].sort((a, b) => b.date.localeCompare(a.date));
 
 export function getPost(slug: string): Post | undefined {
   return POSTS.find((p) => p.slug === slug);

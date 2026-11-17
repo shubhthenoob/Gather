@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AUDIENCES } from "@/lib/audiences";
 import { STORE_URL } from "@/lib/site";
 
 export function AddToChrome({ className = "", label = "Add to Chrome, it's free" }: { className?: string; label?: string }) {
@@ -42,6 +43,9 @@ export function MarketingFooter() {
           <span className="font-semibold">Gather</span>
           <span className="muted">· Keep what matters. Find it later.</span>
         </div>
+        <nav className="muted flex flex-wrap gap-x-5 gap-y-2" aria-label="Gather for">
+          {AUDIENCES.map((a) => <Link key={a.slug} href={`/for/${a.slug}`} className="hover:underline">For {a.name.toLowerCase()}</Link>)}
+        </nav>
         <nav className="muted flex flex-wrap gap-5">
           <Link href="/guide" className="hover:underline">How to use</Link>
           <Link href="/blog" className="hover:underline">Blog</Link>

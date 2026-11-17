@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AddToChrome } from "@/components/marketing";
+import { AUDIENCES } from "@/lib/audiences";
 import { POSTS } from "@/lib/posts";
 import { SITE_URL, STORE_URL } from "@/lib/site";
 
 // Served at "/" for signed-out visitors (the middleware rewrites "/" here).
 export const metadata: Metadata = {
-  title: "Gather: Highlight Text on Any Website and Find It Later",
+  title: "Gather: Free Chrome Highlighter for Any Website, Find Your Highlights Later",
   description:
     "Gather is a free Chrome extension to highlight text on any web page, add notes, and keep everything in a searchable library organised by date. Keep what matters. Find it later.",
   alternates: { canonical: "/" },
@@ -122,6 +123,19 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Audiences */}
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h2 className="text-center text-3xl font-bold">Made for how you read</h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {AUDIENCES.map((a) => (
+            <Link key={a.slug} href={`/for/${a.slug}`} className="card block p-5">
+              <p className="font-semibold">For {a.name.toLowerCase()}</p>
+              <p className="muted mt-1 text-sm">{a.headline}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Blog teaser */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="flex items-end justify-between">
@@ -129,7 +143,7 @@ export default function LandingPage() {
           <Link href="/blog" className="muted text-sm hover:underline">All articles ›</Link>
         </div>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {POSTS.map((p) => (
+          {POSTS.slice(0, 3).map((p) => (
             <Link key={p.slug} href={`/blog/${p.slug}`} className="card block p-6">
               <h3 className="font-semibold leading-snug">{p.title}</h3>
               <p className="muted mt-2 line-clamp-3 text-sm">{p.description}</p>

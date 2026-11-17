@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     return rewrite;
   }
   const isPublic =
-    path.startsWith("/login") || path.startsWith("/auth") || path.startsWith("/blog") || path.startsWith("/screens") ||
+    path.startsWith("/login") || path.startsWith("/auth") || path.startsWith("/blog") || path.startsWith("/for/") || path.startsWith("/screens") ||
     ["/home", "/guide", "/privacy", "/terms"].includes(path);
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
