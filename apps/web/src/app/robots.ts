@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site";
 
-// Personal libraries are private: only the sign-in and privacy pages may be indexed.
+// Public marketing pages may be indexed; personal libraries are private.
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: ["/login", "/privacy", "/terms"], disallow: "/" },
+    rules: { userAgent: "*", allow: ["/$", "/guide", "/blog", "/login", "/privacy", "/terms", "/screens/"], disallow: ["/day", "/search", "/settings", "/api", "/auth", "/home"] },
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

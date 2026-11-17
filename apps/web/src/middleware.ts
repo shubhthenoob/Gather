@@ -18,7 +18,17 @@ export async function middleware(request: NextRequest) {
   });
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const isPublic = path.startsWith("/login") || path.startsWith("/auth") || path === "/privacy" || path === "/terms";
+  // Signed-out visitors to "/" see the public landing page (URL stays "/").
+  if (!user && path === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/home";
+    const rewrite = NextResponse.rewrite(url);
+    response.cookies.getAll().forEach((c) => rewrite.cookies.set(c));
+    return rewrite;
+  }
+  const isPublic =
+    path.startsWith("/login") || path.startsWith("/auth") || path.startsWith("/blog") || path.startsWith("/screens") ||
+    ["/home", "/guide", "/privacy", "/terms"].includes(path);
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -29,5 +39,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|google[0-9a-f]+\.html).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml|google[0-9a-f]+\.html).*)"],
 };
