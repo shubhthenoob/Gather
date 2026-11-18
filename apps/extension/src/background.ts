@@ -288,7 +288,7 @@ async function handle(msg: Request, sender: chrome.runtime.MessageSender): Promi
     case "signIn":
       try { return { ok: true, user: await signIn() }; } catch (e) { return { ok: false, error: (e as Error).message }; }
     case "signOut":
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" }); // only this extension, never the website
       await broadcast({ type: "refresh" });
       return { ok: true };
     case "list": return list(msg.canonicalUrl);
