@@ -294,5 +294,11 @@ chrome.runtime.onStartup.addListener(() => void flushQueue());
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   // First install: open the web library so people see where their highlights live.
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) void chrome.tabs.create({ url: `${__WEB_URL__}/login?welcome=1` });
+  // Chrome doesn't add content scripts to tabs that were already open, so add them now.
+  void chrome.tabs.query({ url: ["http://*/*", "https://*/*"] }).then((tabs) => {
+    for (const t of tabs) {
+      if (t.id !== undefined) chrome.scripting.executeScript({ target: { tabId: t.id }, files: ["content.js"] }).catch(() => {});
+    }
+  });
   void flushQueue();
 });

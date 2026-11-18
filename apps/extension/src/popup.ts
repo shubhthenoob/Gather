@@ -47,7 +47,12 @@ async function renderPage() {
   const page = $("page");
   page.replaceChildren();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!isSupportedUrl(tab?.url)) {
+  if (!tab?.url) {
+    // No URL means Chrome hasn't given Gather access to this site.
+    page.append(text("p", "Gather doesn't have access to this page. In chrome://extensions, open Gather's Details, set Site access to \"On all sites\", then reload this page.", "warn"));
+    return;
+  }
+  if (!isSupportedUrl(tab.url)) {
     page.append(text("p", "Gather can't run on this page. Browser and Web Store pages are restricted.", "muted"));
     return;
   }
