@@ -16,6 +16,7 @@ export type Request =
   | { type: "session" }
   | { type: "signIn" }
   | { type: "signOut" }
+  | { type: "openLibrary" }
   | { type: "list"; canonicalUrl: string }
   | { type: "save"; draft: Draft }
   | { type: "update"; id: string; note: string | null }

@@ -26,9 +26,18 @@ export async function POST(request: NextRequest) {
   // Read the website's access token without refreshing it. A refresh here would rotate the refresh
   // token, and the browser may not store the new cookie for an extension request, which would later
   // look like token reuse and sign the user out of the website.
-  const accessToken = readAccessToken(request);
-  if (!accessToken) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const { data: { user } } = await admin.auth.getUser(accessToken);
+  const websiteToken = readAccessToken(request);
+  const websiteUser = websiteToken ? (await admin.auth.getUser(websiteToken)).data.user : null;
+
+  // The other direction: the extension is signed in and wants the website signed in too.
+  const bearer = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  let user = websiteUser;
+  if (bearer) {
+    const extUser = (await admin.auth.getUser(bearer)).data.user;
+    if (!extUser?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    if (websiteUser?.id === extUser.id) return NextResponse.json({ signedIn: true }, { headers: { "Cache-Control": "no-store" } });
+    user = extUser;
+  }
   if (!user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email: user.email });
   if (error || !data.properties?.hashed_token) {

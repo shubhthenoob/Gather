@@ -84,6 +84,26 @@ async function signInFromWeb(): Promise<UserInfo | null> {
   }
 }
 
+/** Opens the web library, first signing the website in with the extension's session if needed. */
+async function openLibrary() {
+  let url = `${__WEB_URL__}/day/today`;
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) {
+      const res = await fetch(`${__WEB_URL__}/api/extension-token`, {
+        method: "POST", credentials: "include", redirect: "manual", headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const body = (await res.json()) as { token_hash?: string };
+        if (body.token_hash) url = `${__WEB_URL__}/auth/confirm?token_hash=${encodeURIComponent(body.token_hash)}&next=/day/today`;
+      }
+    }
+  } catch { /* fall back to the plain library link */ }
+  await chrome.tabs.create({ url });
+  return null;
+}
+
 async function broadcast(msg: TabMessage) {
   const tabs = await chrome.tabs.query({});
   for (const t of tabs) {
@@ -295,6 +315,7 @@ async function handle(msg: Request, sender: chrome.runtime.MessageSender): Promi
     case "save": return save(msg.draft);
     case "update": return update(msg.id, msg.note);
     case "delete": return remove(msg.id);
+    case "openLibrary": return openLibrary();
     case "queueSize": return (await getQueue()).length;
     case "adoptSession": return adoptSession(msg.tokenHash);
     case "badge":

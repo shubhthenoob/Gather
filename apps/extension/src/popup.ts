@@ -75,6 +75,7 @@ async function render() {
 }
 
 ($("open") as HTMLAnchorElement).href = `${__WEB_URL__}/day/today`;
+$("open").addEventListener("click", (e) => { e.preventDefault(); void send({ type: "openLibrary" }).then(() => window.close()); });
 const site = $("site") as HTMLAnchorElement;
 site.href = __WEB_URL__;
 site.textContent = new URL(__WEB_URL__).host;

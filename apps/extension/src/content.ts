@@ -43,7 +43,7 @@ function main() {
   fab.className = "fab";
   fab.title = `Open your library at ${new URL(__WEB_URL__).host}`;
   fab.innerHTML = `<svg viewBox="5 3 24 24" width="26" height="26" aria-hidden="true"><path d="M9 22l3-9 7 7-9 3z" fill="#202124"/><path d="M13 12l6-6 7 7-6 6z" fill="#fff" stroke="#202124" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="fab-badge" hidden></span>`;
-  fab.addEventListener("click", () => window.open(`${__WEB_URL__}/day/today`, "_blank", "noopener"));
+  fab.addEventListener("click", () => void send({ type: "openLibrary" }));
   shadow.appendChild(fab);
   const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
   function updateFab() {
@@ -219,7 +219,7 @@ function main() {
     try { shown = ((await chrome.storage.local.get("libraryHints")).libraryHints as number | undefined) ?? 0; } catch { /* orphaned */ }
     if (shown >= LIBRARY_HINTS) { toast("Highlight saved"); return; }
     try { await chrome.storage.local.set({ libraryHints: shown + 1 }); } catch { /* ignore */ }
-    toast("Highlight saved", { label: "View in library", run: () => window.open(`${__WEB_URL__}/day/today`, "_blank", "noopener") }, 4000);
+    toast("Highlight saved", { label: "View in library", run: () => void send({ type: "openLibrary" }) }, 4000);
   }
 
   async function saveDraft(draft: Draft) {
