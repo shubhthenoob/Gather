@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
 
 /**
  * Hands the Gather extension a one-time sign-in token for the user who is signed in on the website,
@@ -21,13 +20,16 @@ export async function POST(request: NextRequest) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) return NextResponse.json({ error: "not configured" }, { status: 501 });
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-
   const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  // Read the website's access token without refreshing it. A refresh here would rotate the refresh
+  // token, and the browser may not store the new cookie for an extension request, which would later
+  // look like token reuse and sign the user out of the website.
+  const accessToken = readAccessToken(request);
+  if (!accessToken) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const { data: { user } } = await admin.auth.getUser(accessToken);
+  if (!user?.email) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email: user.email });
   if (error || !data.properties?.hashed_token) {
     return NextResponse.json({ error: "could not create token" }, { status: 500 });
@@ -36,4 +38,28 @@ export async function POST(request: NextRequest) {
     { token_hash: data.properties.hashed_token, email: user.email },
     { headers: { "Cache-Control": "no-store" } },
   );
+}
+
+/** Reassembles the @supabase/ssr auth cookie (possibly split into .0, .1 chunks) and returns its access token. */
+function readAccessToken(request: NextRequest): string | null {
+  const ref = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname.split(".")[0];
+  const name = `sb-${ref}-auth-token`;
+  let raw = request.cookies.get(name)?.value;
+  if (!raw) {
+    const chunks: string[] = [];
+    for (let i = 0; ; i++) {
+      const c = request.cookies.get(`${name}.${i}`)?.value;
+      if (c === undefined) break;
+      chunks.push(c);
+    }
+    raw = chunks.join("") || undefined;
+  }
+  if (!raw) return null;
+  try {
+    const json = raw.startsWith("base64-") ? Buffer.from(raw.slice(7), "base64url").toString("utf8") : decodeURIComponent(raw);
+    const token = (JSON.parse(json) as { access_token?: unknown }).access_token;
+    return typeof token === "string" ? token : null;
+  } catch {
+    return null;
+  }
 }

@@ -39,5 +39,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml|google[0-9a-f]+\.html).*)"],
+  matcher: ["/((?!api/extension-token|_next/static|_next/image|favicon.ico|icon.svg|robots.txt|sitemap.xml|google[0-9a-f]+\.html).*)"],
 };
