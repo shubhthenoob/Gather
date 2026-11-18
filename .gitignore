@@ -9,3 +9,6 @@ next-env.d.ts
 *.tsbuildinfo
 *.zip
 apps/extension/store-icon-128.png
+apps/extension/store-promo-440x280.png
+apps/extension/store/
+apps/extension/dist-store/

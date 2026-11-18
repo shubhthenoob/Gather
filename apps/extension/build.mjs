@@ -8,9 +8,10 @@ import { fileURLToPath } from "node:url";
 import { writeIcons, writeStoreIcon } from "./scripts/icons.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
-const dist = join(root, "dist");
 const watch = process.argv.includes("--watch");
 const store = process.argv.includes("--store");
+// Store builds go to their own folder so they never replace the unpacked dev build in dist/.
+const dist = join(root, store ? "dist-store" : "dist");
 
 function readEnv(file) {
   if (!existsSync(file)) return {};
