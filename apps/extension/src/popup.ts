@@ -74,7 +74,7 @@ async function render() {
   await Promise.all([renderAccount(), renderPage()]);
 }
 
-($("open") as HTMLAnchorElement).href = __WEB_URL__;
+($("open") as HTMLAnchorElement).href = `${__WEB_URL__}/day/today`;
 const site = $("site") as HTMLAnchorElement;
 site.href = __WEB_URL__;
 site.textContent = new URL(__WEB_URL__).host;
