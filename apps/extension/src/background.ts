@@ -64,6 +64,26 @@ async function adoptSession(tokenHash: string): Promise<{ ok: boolean; user?: Us
   return { ok: true, user: await currentUser() };
 }
 
+/**
+ * Ask the Gather website (using its sign-in cookie) for a one-time token, so a user who is already
+ * signed in there never has to sign in to the extension. Works without any Gather tab open.
+ */
+let lastWebTry = 0;
+async function signInFromWeb(): Promise<UserInfo | null> {
+  if (Date.now() - lastWebTry < 30_000) return null;
+  lastWebTry = Date.now();
+  try {
+    const res = await fetch(`${__WEB_URL__}/api/extension-token`, { method: "POST", credentials: "include", redirect: "manual" });
+    if (!res.ok) return null;
+    const { token_hash } = (await res.json()) as { token_hash?: string };
+    if (!token_hash) return null;
+    const r = await adoptSession(token_hash);
+    return r.ok ? r.user ?? null : null;
+  } catch {
+    return null;
+  }
+}
+
 async function broadcast(msg: TabMessage) {
   const tabs = await chrome.tabs.query({});
   for (const t of tabs) {
@@ -264,7 +284,7 @@ async function setTabBadge(tabId: number, painted: number, unresolved: number) {
 
 async function handle(msg: Request, sender: chrome.runtime.MessageSender): Promise<unknown> {
   switch (msg.type) {
-    case "session": return currentUser();
+    case "session": return (await currentUser()) ?? (await signInFromWeb());
     case "signIn":
       try { return { ok: true, user: await signIn() }; } catch (e) { return { ok: false, error: (e as Error).message }; }
     case "signOut":

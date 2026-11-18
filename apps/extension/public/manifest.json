@@ -8,6 +8,7 @@
   "action": { "default_popup": "popup.html", "default_title": "Gather" },
   "background": { "service_worker": "background.js", "type": "module" },
   "permissions": ["storage", "identity", "alarms", "scripting"],
+  "host_permissions": ["https://gatherme.vercel.app/*"],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],

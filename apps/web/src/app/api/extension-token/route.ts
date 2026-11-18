@@ -7,9 +7,15 @@ import { createClient } from "@/lib/supabase/server";
  * so they don't have to sign in twice. The extension redeems it for its own, independent session
  * (sharing the website's refresh token would trip Supabase's token-reuse protection).
  */
+const EXTENSION_ORIGINS = [
+  "chrome-extension://mjnohkfaifggignaafjmdkhcncloogho", // Chrome Web Store
+  "chrome-extension://mfahadeaanmcngjbgblpgfmefmlddcjm", // local development build
+];
+
 export async function POST(request: NextRequest) {
-  // Only our own pages may ask (the browser always sets Origin on POST fetches).
-  if (request.headers.get("origin") !== request.nextUrl.origin) {
+  // Only our own pages or the Gather extension may ask (browsers always set Origin on POST fetches).
+  const origin = request.headers.get("origin");
+  if (origin !== request.nextUrl.origin && !EXTENSION_ORIGINS.includes(origin ?? "")) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
