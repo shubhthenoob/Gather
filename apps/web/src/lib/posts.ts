@@ -4,10 +4,14 @@ export interface Post {
   description: string;
   date: string; // ISO date
   minutes: number;
-  sections: { heading?: string; paragraphs: string[]; list?: string[] }[];
+  sections: { heading?: string; paragraphs: string[]; list?: string[]; table?: { head: string[]; rows: string[][] } }[];
+  /** Questions answered at the end of the article (also published as FAQPage structured data). */
+  faq?: { q: string; a: string }[];
+  updated?: string; // ISO date
 }
 
 import { EXTRA_POSTS } from "./posts-extra";
+import { GUIDE_POSTS } from "./posts-guides";
 
 const BASE_POSTS: Post[] = [
   {
@@ -149,7 +153,7 @@ const BASE_POSTS: Post[] = [
 ];
 
 /** All articles, newest first. */
-export const POSTS: Post[] = [...EXTRA_POSTS, ...BASE_POSTS].sort((a, b) => b.date.localeCompare(a.date));
+export const POSTS: Post[] = [...GUIDE_POSTS, ...EXTRA_POSTS, ...BASE_POSTS].sort((a, b) => b.date.localeCompare(a.date));
 
 export function getPost(slug: string): Post | undefined {
   return POSTS.find((p) => p.slug === slug);

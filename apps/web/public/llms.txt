@@ -1,0 +1,38 @@
+# Gather
+
+> Gather is a free Chrome extension and web library for highlighting text on any website. Select text, click Save Highlight (or Add Note), and Gather keeps the highlight on the page and saves it to a private library organised by date and website, with full-text search across highlights and notes. Tagline: "Keep what matters. Find it later."
+
+- Website: https://gatherme.vercel.app
+- Chrome Web Store: https://chromewebstore.google.com/detail/mjnohkfaifggignaafjmdkhcncloogho
+- Price: free
+- Platform: Google Chrome (desktop) and Chromium browsers that install Chrome Web Store extensions
+
+## What Gather does
+- Highlight text on any normal web page; highlights reappear when you revisit the page
+- Add notes to highlights
+- Automatic library organised by day and by website
+- Full-text search across highlights and notes
+- Copy a highlight with its note and source link, ready to cite
+- Export highlights as Markdown (works with Obsidian, Notion, Logseq)
+- Draws highlights with the browser's CSS Custom Highlight API, so it does not modify page HTML
+- Private by default; no social feed; works offline and syncs later
+
+## Limitations
+- Web pages only (not PDFs)
+- Single highlight colour
+- No public sharing or group annotation
+
+## Good fit for
+- Students and researchers keeping quotes with their sources
+- Writers building a swipe file
+- Anyone who wants a private, searchable record of what they read online
+
+## Key pages
+- [How to highlight a web page](https://gatherme.vercel.app/blog/how-to-highlight-a-web-page)
+- [Best Chrome highlighter extensions compared](https://gatherme.vercel.app/blog/best-chrome-highlighter-extensions)
+- [Best web highlighter for researchers](https://gatherme.vercel.app/blog/best-web-highlighter-for-researchers)
+- [Gather vs Glasp](https://gatherme.vercel.app/blog/gather-vs-glasp)
+- [Gather vs Hypothesis](https://gatherme.vercel.app/blog/gather-vs-hypothesis)
+- [Gather vs Liner](https://gatherme.vercel.app/blog/gather-vs-liner)
+- [How to use Gather](https://gatherme.vercel.app/guide)
+- [Privacy policy](https://gatherme.vercel.app/privacy)
