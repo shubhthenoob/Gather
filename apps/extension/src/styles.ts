@@ -43,8 +43,14 @@ textarea:focus { border-color: #fbbc04; }
 .note.muted { color: #9aa0a6; font-style: italic; }
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  padding: 10px 16px; display: flex; align-items: center;
+  padding: 8px 8px 8px 16px; display: flex; align-items: center; gap: 12px;
 }
+.toast-action {
+  all: unset; cursor: pointer; padding: 6px 12px; border-radius: 8px;
+  background: #fbbc04; color: #202124; font-weight: 600; font-size: 13px; white-space: nowrap;
+}
+.toast-action:hover { background: #fdd663; }
+.toast-action:focus-visible { outline: 2px solid #fdd663; outline-offset: 2px; }
 .fab {
   all: unset; position: fixed; right: 0; top: 50%; transform: translateY(-50%);
   width: 44px; height: 48px; display: flex; align-items: center; justify-content: center;

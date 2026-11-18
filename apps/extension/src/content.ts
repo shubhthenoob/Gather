@@ -100,7 +100,7 @@ function main() {
     clearTimeout(toastTimer);
     const t = el("div", "toast");
     t.append(el("span", "", message));
-    if (action) t.append(button(action.label, () => { t.remove(); action.run(); }, "link"));
+    if (action) t.append(button(action.label, () => { t.remove(); action.run(); }, "toast-action"));
     shadow.appendChild(t);
     toastTimer = setTimeout(() => t.remove(), ms);
   }
@@ -212,14 +212,8 @@ function main() {
     else void showSavedToast();
   }
 
-  // Point to the library on the first few saves only; after that, a plain confirmation.
-  const LIBRARY_HINTS = 3;
   async function showSavedToast() {
-    let shown = 0;
-    try { shown = ((await chrome.storage.local.get("libraryHints")).libraryHints as number | undefined) ?? 0; } catch { /* orphaned */ }
-    if (shown >= LIBRARY_HINTS) { toast("Highlight saved"); return; }
-    try { await chrome.storage.local.set({ libraryHints: shown + 1 }); } catch { /* ignore */ }
-    toast("Highlight saved", { label: "View in library", run: () => void send({ type: "openLibrary" }) }, 4000);
+    toast("Highlight saved", { label: "View in library", run: () => void send({ type: "openLibrary" }) }, 5000);
   }
 
   async function saveDraft(draft: Draft) {
