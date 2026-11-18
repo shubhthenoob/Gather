@@ -329,9 +329,16 @@ chrome.runtime.onMessage.addListener((msg: Request, sender, reply) => {
   return true; // async response
 });
 
-chrome.alarms.create("sync", { periodInMinutes: 1 });
+// Creating the alarm while Chrome is still registering the service worker can throw "No SW",
+// so only create it when it's missing, and ignore that transient failure.
+async function ensureSyncAlarm() {
+  try {
+    if (!(await chrome.alarms.get("sync"))) await chrome.alarms.create("sync", { periodInMinutes: 1 });
+  } catch { /* retried on the next startup or install */ }
+}
+void ensureSyncAlarm();
 chrome.alarms.onAlarm.addListener((a) => { if (a.name === "sync") void flushQueue(); });
-chrome.runtime.onStartup.addListener(() => void flushQueue());
+chrome.runtime.onStartup.addListener(() => { void ensureSyncAlarm(); void flushQueue(); });
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   // First install: open the web library so people see where their highlights live.
   if (reason === chrome.runtime.OnInstalledReason.INSTALL) void chrome.tabs.create({ url: `${__WEB_URL__}/login?welcome=1` });
