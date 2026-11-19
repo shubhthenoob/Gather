@@ -398,11 +398,39 @@ function main() {
     ta.placeholder = "Add a note (optional)";
     ta.value = existing?.note ?? "";
     ta.rows = 3;
+
+    // Categories chosen here are saved together with the note.
+    let chosen = [...(existing?.category_ids ?? draft?.category_ids ?? [])];
+    const catRow = el("div", "composer-cats");
+    const renderCats = () => {
+      catRow.replaceChildren();
+      for (const c of categories.filter((x) => chosen.includes(x.id))) {
+        const chip = el("button", "chip removable");
+        chip.type = "button";
+        chip.title = `Remove ${c.name}`;
+        chip.append(dot(c.color), document.createTextNode(c.name), el("span", "x", "×"));
+        chip.addEventListener("mousedown", (e) => e.preventDefault());
+        chip.addEventListener("click", (e) => { e.stopPropagation(); chosen = chosen.filter((id) => id !== c.id); renderCats(); });
+        catRow.append(chip);
+      }
+      const add = button(chosen.length ? "+ Category" : "🏷 Add category", () => {
+        openPicker(box.getBoundingClientRect(), {
+          selected: chosen, mode: "existing",
+          onApply: (ids) => { chosen = ids; renderCats(); },
+        });
+      }, "btn chip-add");
+      catRow.append(add);
+    };
+    renderCats();
+
     const submit = () => {
       closePanel();
       clearSelection();
-      if (existing) void patchHighlight(existing, { note: ta.value.trim() || null }, "Note saved");
-      else if (draft) void saveDraft({ ...draft, note: ta.value.trim() || null });
+      const note = ta.value.trim() || null;
+      if (existing) {
+        const sameCats = chosen.join() === (existing.category_ids ?? []).join();
+        void patchHighlight(existing, sameCats ? { note } : { note, category_ids: chosen }, "Saved");
+      } else if (draft) void saveDraft({ ...draft, note, category_ids: chosen });
     };
     ta.addEventListener("keydown", (e) => {
       e.stopPropagation();
@@ -411,7 +439,7 @@ function main() {
     });
     const actions = el("div", "actions");
     actions.append(button("Cancel", closePanel, "btn ghost"), button("Save", submit, "btn primary"));
-    box.append(ta, actions);
+    box.append(ta, catRow, actions);
     panel = box;
     place(box, rect);
     ta.focus();

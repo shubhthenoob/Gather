@@ -41,6 +41,12 @@ textarea:focus { border-color: #fbbc04; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.08); font-size: 12px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.composer-cats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.chip.removable { all: unset; display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px 3px 8px; border-radius: 999px; background: rgba(255,255,255,.08); font-size: 12px; cursor: pointer; }
+.chip.removable:hover { background: rgba(255,255,255,.14); }
+.chip.removable .x { color: #9aa0a6; font-size: 14px; line-height: 1; }
+.btn.chip-add { padding: 3px 10px; border-radius: 999px; border: 1px dashed #5f6368; font-size: 12px; color: #bdc1c6; }
+.btn.chip-add:hover { border-color: #fbbc04; color: #fdd663; }
 .picker { width: 260px; padding: 8px; }
 .picker-input {
   width: 100%; padding: 8px 10px; margin-bottom: 6px; background: #303134; color: #e8eaed;
