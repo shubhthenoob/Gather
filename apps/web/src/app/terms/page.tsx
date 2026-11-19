@@ -8,7 +8,7 @@ export default function TermsPage() {
     <main className="mx-auto max-w-2xl px-4 py-12 text-[15px] leading-relaxed">
       <Link href="/login" className="muted text-sm hover:underline">‹ Gather</Link>
       <h1 className="mb-1 mt-4 text-3xl font-semibold">Terms of Service</h1>
-      <p className="muted mb-8 text-sm">Last updated: November 17, 2026</p>
+      <p className="muted mb-8 text-sm">Last updated: November 19, 2026</p>
 
       <div className="space-y-6">
         <section>
@@ -18,12 +18,13 @@ export default function TermsPage() {
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">2. Your account</h2>
-          <p>You sign in with your Google account. You are responsible for activity on your account and for keeping access to your Google account secure. You must be old enough to use Google services in your country.</p>
+          <p>You can use the extension without an account. Highlights, notes and categories you save before signing in are stored only in your browser on that device; we cannot recover them if you uninstall the extension, clear your browser data or change device.</p>
+          <p className="mt-2">To keep your highlights in your library and sync them across devices, you sign in with your Google account. When you do, anything saved on the device is added to your account. You are responsible for activity on your account and for keeping access to your Google account secure. You must be old enough to use Google services in your country.</p>
         </section>
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">3. Your content</h2>
-          <p>The highlights and notes you save belong to you. You give us permission to store, process and display them only so we can provide Gather to you: saving them, showing them in your library and on the pages where you made them, and searching them. We do not claim ownership of your content and do not use it for any other purpose.</p>
+          <p>The highlights, notes and categories you save belong to you. You give us permission to store, process and display them only so we can provide Gather to you: saving them, showing them in your library and on the pages where you made them, and searching them. We do not claim ownership of your content and do not use it for any other purpose.</p>
           <p className="mt-2">Text you highlight comes from other websites and may be protected by copyright. Gather is for personal reference. You are responsible for how you use and share what you save.</p>
         </section>
 
@@ -57,7 +58,7 @@ export default function TermsPage() {
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">8. Ending your use</h2>
-          <p>You can stop using Gather at any time by uninstalling the extension. To delete your account and data, email us at the address below. We may end access for accounts that seriously or repeatedly break these terms.</p>
+          <p>You can stop using Gather at any time by uninstalling the extension (this also deletes anything saved only on your device). To delete your account and data, email us at the address below. We may end access for accounts that seriously or repeatedly break these terms.</p>
         </section>
 
         <section>
