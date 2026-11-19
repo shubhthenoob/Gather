@@ -31,9 +31,12 @@ export interface Profile {
 /** Authenticated user and profile, or redirect to /login. Cached per request. */
 export const requireUser = cache(async () => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // In parallel: row-level security limits the profile query to the signed-in user's own row.
+  const [{ data: { user } }, { data: profile }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("users").select("id,email,name,timezone").maybeSingle(),
+  ]);
   if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("users").select("id,email,name,timezone").eq("id", user.id).single();
   return {
     supabase,
     user,

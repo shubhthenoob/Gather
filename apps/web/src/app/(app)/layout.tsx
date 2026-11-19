@@ -1,4 +1,4 @@
-import { getCategories, requireUser } from "@/lib/supabase/server";
+import { createClient, getCategories, requireUser } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { Sidebar, SearchBox } from "@/components/sidebar";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
@@ -6,8 +6,13 @@ import { ExtensionBridge } from "@/components/extension-bridge";
 import type { DayPage } from "@highlight/shared";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, profile } = await requireUser();
-  const [{ data }, categories] = await Promise.all([supabase.rpc("day_pages"), getCategories(supabase)]);
+  // Sidebar data loads alongside the sign-in check rather than after it.
+  const supabase = await createClient();
+  const [{ user, profile }, { data }, categories] = await Promise.all([
+    requireUser(),
+    supabase.rpc("day_pages"),
+    getCategories(supabase),
+  ]);
   const days = (data ?? []) as DayPage[];
   return (
     <div className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden">

@@ -16,7 +16,10 @@ export async function middleware(request: NextRequest) {
       },
     },
   });
-  const { data: { user } } = await supabase.auth.getUser();
+  // getClaims verifies the session token locally (refreshing it if expired) instead of a
+  // round trip to Supabase Auth on every page; pages still verify with getUser.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
   const path = request.nextUrl.pathname;
   // Signed-out visitors to "/" see the public landing page (URL stays "/").
   if (!user && path === "/") {
