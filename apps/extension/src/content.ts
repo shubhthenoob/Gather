@@ -329,7 +329,20 @@ function main() {
         listEl.append(row);
         items.push({ run: () => void create() });
       }
-      if (!items.length) listEl.append(el("p", "picker-empty", "Type a name to create a category."));
+      if (!q) {
+        // Always offer an obvious way to make a new category.
+        const row = el("div", "picker-row create");
+        row.setAttribute("role", "option");
+        row.append(el("span", "plus", "+"), el("span", "picker-name", "New category"));
+        row.addEventListener("mousedown", (e) => e.preventDefault());
+        row.addEventListener("click", () => {
+          input.placeholder = "Type a name, then press Enter";
+          input.focus({ preventScroll: true });
+          input.classList.add("nudge");
+          setTimeout(() => input.classList.remove("nudge"), 600);
+        });
+        listEl.append(row);
+      }
       active = Math.min(active, Math.max(0, items.length - 1));
       [...listEl.querySelectorAll(".picker-row")].forEach((r, i) => r.classList.toggle("active", i === active));
 

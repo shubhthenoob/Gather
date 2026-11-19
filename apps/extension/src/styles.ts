@@ -53,6 +53,8 @@ textarea:focus { border-color: #fbbc04; }
   border: 1px solid #5f6368; border-radius: 6px; font-size: 13px; outline: none;
 }
 .picker-input:focus { border-color: #fbbc04; }
+.picker-input.nudge { animation: nudge .5s ease; }
+@keyframes nudge { 0%,100% { transform: none; } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .picker-list { max-height: 220px; overflow-y: auto; }
 .picker-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
 .picker-row:hover, .picker-row.active { background: rgba(255,255,255,.08); }
