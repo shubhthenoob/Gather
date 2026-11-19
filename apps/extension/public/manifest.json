@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Gather",
-  "description": "Keep what matters. Find it later. Highlight any webpage, add notes and categories, and find everything in a side panel.",
+  "name": "Gather: Highlight, Save & Categorise Anything on the Web",
+  "description": "Keep what matters. Find it later. Highlight any webpage, add notes, sort into colour categories and search it all in a side panel.",
   "version": "0.3.0",
   "minimum_chrome_version": "116",
   "icons": {
@@ -50,5 +50,6 @@
       },
       "description": "Open the Gather panel"
     }
-  }
+  },
+  "short_name": "Gather"
 }
