@@ -20,7 +20,7 @@ export type Request =
   | { type: "signIn" }
   | { type: "signOut" }
   | { type: "openLibrary" }
-  | { type: "openPanel" }
+  | { type: "openPanel"; auto?: boolean }
   | { type: "list"; canonicalUrl: string }
   | { type: "listAll" }
   | { type: "save"; draft: Draft }
@@ -53,6 +53,9 @@ export type TabStatus = { painted: number; unresolved: number; total: number; un
 
 /** Broadcast from the background to extension pages (the side panel) after any change. */
 export type PanelMessage = { type: "changed" };
+
+/** Set while the user has closed the side panel; saving then stops reopening it. */
+export const PANEL_CLOSED_KEY = "panelClosed";
 
 /** Storage key for "scroll to this highlight once the page opens". */
 export const JUMP_KEY = "jump";

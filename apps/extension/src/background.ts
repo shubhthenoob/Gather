@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { isSupportedUrl, nextColor, normalizeText, type Category, type Highlight } from "@highlight/shared";
+import { PANEL_CLOSED_KEY } from "./messages";
 import type {
   CategoryPatch, CategoryResult, Draft, HighlightPatch, ListResult, PanelMessage, Request, SaveResult, TabMessage, UserInfo,
 } from "./messages";
@@ -520,9 +521,17 @@ async function handle(msg: Request, sender: chrome.runtime.MessageSender): Promi
   switch (msg.type) {
     case "openPanel": {
       // Must run before any await: Chrome only allows this right after the user's click.
+      // Automatic opens (after saving) are skipped once the user has closed the panel.
+      if (msg.auto && panelClosed) return { ok: false, skipped: true };
       const tabId = sender.tab?.id;
       if (tabId === undefined) return { ok: false };
-      try { await chrome.sidePanel.open({ tabId }); return { ok: true }; } catch { await openLibrary(); return { ok: false }; }
+      try {
+        await chrome.sidePanel.open({ tabId });
+        return { ok: true };
+      } catch {
+        if (!msg.auto) await openLibrary();
+        return { ok: false };
+      }
     }
     case "session": return (await currentUser()) ?? (await signInFromWeb());
     case "signIn":
@@ -555,6 +564,14 @@ chrome.runtime.onMessage.addListener((msg: Request | PanelMessage, sender, reply
   if (msg.type === "changed") return false; // our own broadcast to the panel
   handle(msg, sender).then(reply, (e) => reply({ ok: false, error: String(e?.message ?? e) }));
   return true; // async response
+});
+
+// Whether the user closed the side panel. Kept in memory so openPanel needs no await
+// (an await would lose the user's click), and mirrored from storage, which the panel writes.
+let panelClosed = false;
+void chrome.storage.local.get(PANEL_CLOSED_KEY).then((r) => { panelClosed = !!r[PANEL_CLOSED_KEY]; });
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && PANEL_CLOSED_KEY in changes) panelClosed = !!changes[PANEL_CLOSED_KEY].newValue;
 });
 
 // Clicking the toolbar icon (or Alt+G) opens the side panel.

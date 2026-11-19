@@ -3,7 +3,7 @@ import {
   type Category, type Highlight,
 } from "@highlight/shared";
 import {
-  send, JUMP_KEY, type CategoryResult, type HighlightPatch, type Jump, type ListResult, type PanelMessage, type SaveResult,
+  send, JUMP_KEY, PANEL_CLOSED_KEY, type CategoryResult, type HighlightPatch, type Jump, type ListResult, type PanelMessage, type SaveResult,
   type TabStatus, type UserInfo,
 } from "./messages";
 
@@ -567,6 +567,10 @@ document.addEventListener("mousedown", (e) => {
 chrome.tabs.onActivated.addListener(() => { if (!userPickedAll) scope = "page"; reloadSoon(); });
 chrome.tabs.onUpdated.addListener((_id, info, t) => { if (t.active && (info.url || info.status === "complete")) reloadSoon(); });
 chrome.runtime.onMessage.addListener((msg: PanelMessage) => { if (msg?.type === "changed") reloadSoon(); return false; });
+
+// Opening the panel (by any route) re-enables opening it after saves; closing it turns that off.
+void chrome.storage.local.set({ [PANEL_CLOSED_KEY]: false });
+window.addEventListener("pagehide", () => { void chrome.storage.local.set({ [PANEL_CLOSED_KEY]: true }); });
 
 void load();
 void __WEB_URL__;

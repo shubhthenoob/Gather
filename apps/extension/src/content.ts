@@ -210,6 +210,14 @@ function main() {
     repaint();
   }
 
+  /**
+   * After saving, show the side panel, unless the user has closed it (then it stays closed until
+   * they open it themselves). Sent straight from the click handler so Chrome treats it as user-initiated.
+   */
+  function autoOpenPanel() {
+    void send({ type: "openPanel", auto: true });
+  }
+
   // ---------- Save / edit / delete ----------
   async function saveDraft(draft: Draft) {
     const res = await send<SaveResult>({ type: "save", draft }).catch((e) => ({ ok: false, error: String(e) }) as SaveResult);
@@ -220,7 +228,7 @@ function main() {
     else {
       const cats = categoriesOf(res.highlight, categories);
       const label = cats.length ? `Saved to ${cats.map((c) => c.name).join(", ")}` : "Highlight saved";
-      toast(label, { label: res.local ? "Open panel" : "View in library", run: () => void send({ type: res.local ? "openPanel" : "openLibrary" }) }, 5000);
+      toast(label, { label: "View in library", run: () => void send({ type: "openPanel" }) }, 5000);
     }
   }
 
@@ -386,12 +394,12 @@ function main() {
     const categoryBtn = button("🏷 Category", () => {
       openPicker(bar.getBoundingClientRect(), {
         selected: [], mode: "new",
-        onApply: (ids) => { closePanel(); clearSelection(); void saveDraft({ ...draft, category_ids: ids }); },
+        onApply: (ids) => { autoOpenPanel(); closePanel(); clearSelection(); void saveDraft({ ...draft, category_ids: ids }); },
       });
     });
     categoryBtn.title = "Save into a category";
     bar.append(
-      button("Save", () => { closePanel(); clearSelection(); void saveDraft(draft); }, "btn primary"),
+      button("Save", () => { autoOpenPanel(); closePanel(); clearSelection(); void saveDraft(draft); }, "btn primary"),
       button("Note", () => showComposer(range, null, draft)),
       categoryBtn,
     );
@@ -443,7 +451,7 @@ function main() {
       if (existing) {
         const sameCats = chosen.join() === (existing.category_ids ?? []).join();
         void patchHighlight(existing, sameCats ? { note } : { note, category_ids: chosen }, "Saved");
-      } else if (draft) void saveDraft({ ...draft, note, category_ids: chosen });
+      } else if (draft) { autoOpenPanel(); void saveDraft({ ...draft, note, category_ids: chosen }); }
     };
     ta.addEventListener("keydown", (e) => {
       e.stopPropagation();
