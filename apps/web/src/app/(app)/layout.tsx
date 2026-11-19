@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/supabase/server";
+import { getCategories, requireUser } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { Sidebar, SearchBox } from "@/components/sidebar";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
@@ -7,12 +7,13 @@ import type { DayPage } from "@highlight/shared";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { supabase, user, profile } = await requireUser();
-  const { data } = await supabase.rpc("day_pages");
+  const [{ data }, categories] = await Promise.all([supabase.rpc("day_pages"), getCategories(supabase)]);
   const days = (data ?? []) as DayPage[];
   return (
     <div className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden">
       <Sidebar
         days={days}
+        categories={categories}
         timezone={profile.timezone}
         name={profile.name ?? user.email ?? ""}
         email={user.email ?? ""}
