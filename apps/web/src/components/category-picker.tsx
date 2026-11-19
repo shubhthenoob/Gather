@@ -42,6 +42,7 @@ export function CategoryPicker(props: {
   const [active, setActive] = useState(0);
   const [chosen, setChosen] = useState(new Set(props.selected));
   const [error, setError] = useState("");
+  const [creating, setCreating] = useState("");
   const sorted = useMemo(() => [...props.categories].sort(byRecent), [props.categories]);
   const matches = sorted.filter((c) => c.name.toLowerCase().includes(q.trim().toLowerCase()));
   const canCreate = !!q.trim() && !sorted.some((c) => c.name.toLowerCase() === q.trim().toLowerCase());
@@ -58,12 +59,19 @@ export function CategoryPicker(props: {
     commit(next);
   };
   const create = async () => {
+    const name = q.trim();
+    if (!name || creating) return;
+    setCreating(name);
+    setQ("");
+    setError("");
     try {
-      const c = await createCategory(q.trim());
-      setQ("");
+      const c = await createCategory(name);
       commit(new Set(chosen).add(c.id), c);
     } catch (e) {
+      setQ(name);
       setError(String((e as Error).message ?? e));
+    } finally {
+      setCreating("");
     }
   };
   const run = (i: number) => (i < matches.length ? toggle(matches[i].id) : void create());
@@ -106,7 +114,13 @@ export function CategoryPicker(props: {
             <span className="truncate">Create “{q.trim()}”</span>
           </button>
         )}
-        {!rows && <p className="muted px-2 py-1.5 text-xs">Type a name to create a category.</p>}
+        {creating && (
+          <div role="status" className="flex items-center gap-2 px-2 py-1.5 text-sm">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--accent)]" aria-hidden="true" />
+            <span className="muted truncate">Creating “{creating}”…</span>
+          </div>
+        )}
+        {!rows && !creating && <p className="muted px-2 py-1.5 text-xs">Type a name to create a category.</p>}
       </div>
       {error && <p className="mt-1 px-2 text-xs text-red-600">{error}</p>}
     </div>
