@@ -41,7 +41,7 @@ export const EXTRA_POSTS: Post[] = [
       },
       {
         heading: "Step 1: Highlight as you read",
-        paragraphs: ["Install Gather in Chrome, select text on any page and click Save Highlight. Add a note if you want to remember why it mattered."],
+        paragraphs: ["Install Gather in Chrome, select text on any page and click Save. Add a note if you want to remember why it mattered."],
       },
       {
         heading: "Step 2: Export a day or everything",
@@ -125,7 +125,7 @@ export const EXTRA_POSTS: Post[] = [
       },
       {
         heading: "Highlight sources as you read",
-        paragraphs: ["Instead of copying quotes into a document, highlight them where they are. With Gather installed, select a passage and click Save Highlight. The quote, page title, link and date are saved together automatically, which is exactly what you need for a citation."],
+        paragraphs: ["Instead of copying quotes into a document, highlight them where they are. With Gather installed, select a passage and click Save (or 🏷 Category to file it under your essay's sections). The quote, page title, link and date are saved together automatically, which is exactly what you need for a citation."],
       },
       {
         heading: "Note why each quote matters",

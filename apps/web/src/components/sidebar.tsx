@@ -47,7 +47,7 @@ export function Sidebar(props: { days: DayPage[]; timezone: string; name: string
   const [open, setOpen] = useState(false);
   const today = todayIn(props.timezone);
   const pastDays = props.days.filter((d) => d.day !== today);
-  const active = (href: string) => pathname === href || (href === `/day/${today}` && pathname === "/day/today");
+  const active = (href: string) => pathname === href || (href === `/day/${today}` && pathname === "/day/today") || (href === "/categories" && pathname.startsWith("/categories/"));
   const item = (href: string, label: React.ReactNode, count?: number) => (
     <Link
       key={href}
@@ -74,6 +74,7 @@ export function Sidebar(props: { days: DayPage[]; timezone: string; name: string
       <div className={`${open ? "flex" : "hidden"} flex-col md:flex md:min-h-0 md:flex-1`}>
         <nav className="flex-1 overflow-y-auto pb-4 pr-3">
           {item("/day/today", "Today", todayCount ? Number(todayCount.highlight_count) + Number(todayCount.note_count) : undefined)}
+          {item("/categories", <span className="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" /><circle cx="7.5" cy="7.5" r="1.5" /></svg>Categories</span>)}
           {pastDays.length > 0 && <p className="muted px-4 pb-1 pt-4 text-xs font-medium uppercase tracking-wider">Pages</p>}
           {pastDays.map((d) => item(`/day/${d.day}`, formatDay(d.day), Number(d.highlight_count) + Number(d.note_count)))}
         </nav>

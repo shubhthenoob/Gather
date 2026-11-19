@@ -4,3 +4,4 @@ export * from "./text";
 export * from "./dates";
 export * from "./group";
 export * from "./markdown";
+export * from "./categories";

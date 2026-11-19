@@ -71,7 +71,8 @@ const common = {
 const configs = [
   { ...common, entryPoints: [join(root, "src/background.ts")], outfile: join(dist, "background.js"), format: "esm" },
   { ...common, entryPoints: [join(root, "src/content.ts")], outfile: join(dist, "content.js"), format: "iife" },
-  { ...common, entryPoints: [join(root, "src/popup.ts")], outfile: join(dist, "popup.js"), format: "iife" },
+  { ...common, entryPoints: [join(root, "src/sidepanel.ts")], outfile: join(dist, "sidepanel.js"), format: "iife" },
+  { ...common, entryPoints: [join(root, "src/welcome.ts")], outfile: join(dist, "welcome.js"), format: "iife" },
 ];
 
 if (watch) {

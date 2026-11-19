@@ -20,8 +20,8 @@ const STEPS: { title: string; body: React.ReactNode; img?: { src: string; alt: s
   },
   {
     title: "Highlight text on any page",
-    body: <>Select some text while you read. A small toolbar appears: click <strong>Save Highlight</strong> and the text turns yellow. Come back to the page later and your highlights are still there.</>,
-    img: { src: "/screens/screenshot-1.png", alt: "Selecting text and clicking Save Highlight in Gather" },
+    body: <>Select some text while you read. A small toolbar appears: click <strong>Save</strong> and the text turns yellow, or click <strong>🏷 Category</strong> to file it in a colour-coded category. Come back to the page later and your highlights are still there.</>,
+    img: { src: "/screens/screenshot-1.png", alt: "Selecting text and clicking Save in Gather" },
   },
   {
     title: "Add a note",
@@ -29,7 +29,7 @@ const STEPS: { title: string; body: React.ReactNode; img?: { src: string; alt: s
   },
   {
     title: "Open your library",
-    body: <>Click the yellow tab on the right edge of any page, or <strong>Open my library</strong> in the extension popup, or visit <Link href="/" className="underline">gatherme.vercel.app</Link>. Highlights are grouped by day and by website.</>,
+    body: <>Click the Gather icon in Chrome's toolbar (or press <strong>Alt+G</strong>) to open the side panel with this page's highlights, categories and search. For the full library, click <strong>Open library</strong> in the panel, or visit <Link href="/" className="underline">gatherme.vercel.app</Link>. Highlights are grouped by day and by website.</>,
     img: { src: "/screens/screenshot-2.png", alt: "The Gather library organised by date" },
   },
   {

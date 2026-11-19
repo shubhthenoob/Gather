@@ -1,6 +1,6 @@
 # Gather
 
-> Gather is a free Chrome extension and web library for highlighting text on any website. Select text, click Save Highlight (or Add Note), and Gather keeps the highlight on the page and saves it to a private library organised by date and website, with full-text search across highlights and notes. Tagline: "Keep what matters. Find it later."
+> Gather is a free Chrome extension and web library for highlighting text on any website. Select text, click Save (or add a note or category), and Gather keeps the highlight on the page and saves it to a private library organised by date and website, with full-text search across highlights and notes. Tagline: "Keep what matters. Find it later."
 
 - Website: https://gatherme.vercel.app
 - Chrome Web Store: https://chromewebstore.google.com/detail/mjnohkfaifggignaafjmdkhcncloogho
@@ -10,6 +10,9 @@
 ## What Gather does
 - Highlight text on any normal web page; highlights reappear when you revisit the page
 - Add notes to highlights
+- Colour-coded categories: several per highlight, preset or custom colours
+- Side panel (toolbar icon or Alt+G) to see, search, filter, edit, copy and delete highlights without leaving the page
+- Works without an account: highlights stay on the device and sync after signing in with Google
 - Automatic library organised by day and by website
 - Full-text search across highlights and notes
 - Copy a highlight with its note and source link, ready to cite
@@ -19,7 +22,6 @@
 
 ## Limitations
 - Web pages only (not PDFs)
-- Single highlight colour
 - No public sharing or group annotation
 
 ## Good fit for

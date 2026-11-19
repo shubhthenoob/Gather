@@ -1,13 +1,11 @@
 export const PAGE_CSS = `
-::highlight(hl-ext-a) { background-color: rgba(255, 221, 51, 0.45); color: inherit; }
-::highlight(hl-ext-b) { background-color: rgba(255, 184, 77, 0.45); color: inherit; }
 ::highlight(hl-ext-active) { background-color: rgba(251, 188, 4, 0.75); color: inherit; }
 `;
 
 export const UI_CSS = `
 :host { all: initial; }
 * { box-sizing: border-box; font-family: "Inter", system-ui, "Segoe UI", sans-serif; }
-.toolbar, .composer, .toast {
+.toolbar, .composer, .toast, .picker {
   position: absolute;
   background: #202124; color: #e8eaed;
   border-radius: 10px;
@@ -39,6 +37,31 @@ textarea {
 }
 textarea:focus { border-color: #fbbc04; }
 .actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+.actions.spread { justify-content: flex-start; flex-wrap: wrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,.08); font-size: 12px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.picker { width: 260px; padding: 8px; }
+.picker-input {
+  width: 100%; padding: 8px 10px; margin-bottom: 6px; background: #303134; color: #e8eaed;
+  border: 1px solid #5f6368; border-radius: 6px; font-size: 13px; outline: none;
+}
+.picker-input:focus { border-color: #fbbc04; }
+.picker-list { max-height: 220px; overflow-y: auto; }
+.picker-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.picker-row:hover, .picker-row.active { background: rgba(255,255,255,.08); }
+.picker-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-row.create { color: #fdd663; }
+.plus { width: 10px; text-align: center; font-weight: 700; }
+.check {
+  all: unset; width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #9aa0a6;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #202124; cursor: pointer;
+}
+.check.on { background: #fbbc04; border-color: #fbbc04; }
+.check:hover { border-color: #fdd663; }
+.picker-empty { margin: 6px 8px; color: #9aa0a6; font-size: 12px; }
+.picker-footer { display: flex; justify-content: flex-end; padding-top: 6px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,.08); }
+.picker-footer[hidden] { display: none; }
 .note { margin: 0; white-space: pre-wrap; max-height: 180px; overflow: auto; }
 .note.muted { color: #9aa0a6; font-style: italic; }
 .toast {

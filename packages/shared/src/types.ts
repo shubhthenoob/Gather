@@ -17,14 +17,26 @@ export interface Highlight {
   prefix: string;
   suffix: string;
   anchor_data: AnchorData;
+  /** Category ids, main category first. Empty (or missing on old rows) means uncategorised. */
+  category_ids?: string[];
   created_at: string;
   updated_at: string;
 }
 
 export type NewHighlight = Pick<
   Highlight,
-  "selected_text" | "note" | "source_url" | "canonical_url" | "page_title" | "domain" | "prefix" | "suffix" | "anchor_data"
+  "selected_text" | "note" | "source_url" | "canonical_url" | "page_title" | "domain" | "prefix" | "suffix" | "anchor_data" | "category_ids"
 >;
+
+export interface Category {
+  id: string;
+  user_id: string;
+  name: string;
+  /** Hex colour, e.g. "#34a853". */
+  color: string;
+  created_at: string;
+  last_used_at: string;
+}
 
 export interface Note {
   id: string;
@@ -44,6 +56,7 @@ export interface SearchResult {
   domain: string | null;
   url: string | null;
   created_at: string;
+  category_ids?: string[];
 }
 
 export interface DayPage {

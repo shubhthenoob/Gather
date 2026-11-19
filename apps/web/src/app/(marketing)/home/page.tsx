@@ -69,7 +69,7 @@ export default function LandingPage() {
         </div>
         <img
           src="/screens/screenshot-1.png"
-          alt="Highlighting text on a web page with Gather: the Save Highlight toolbar and saved yellow highlights"
+          alt="Highlighting text on a web page with Gather: the Save toolbar and saved yellow highlights"
           width={1280}
           height={800}
           className="bordered mx-auto mt-14 w-full max-w-5xl rounded-2xl border shadow-2xl"
@@ -82,7 +82,7 @@ export default function LandingPage() {
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {[
             ["Select", "Highlight any text while you read. A small toolbar appears."],
-            ["Save", "Click Save Highlight, or add a note. It turns yellow on the page."],
+            ["Save", "Click Save, add a note, or pick a category. It is highlighted in that colour on the page."],
             ["Find", "Open your library to browse by day or search everything you've saved."],
           ].map(([t, b], i) => (
             <div key={t} className="card p-6">

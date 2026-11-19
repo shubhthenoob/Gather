@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { formatDay, localDay, type SearchResult } from "@highlight/shared";
-import { requireUser } from "@/lib/supabase/server";
+import { categoriesOf, formatDay, localDay, type SearchResult } from "@highlight/shared";
+import { getCategories, requireUser } from "@/lib/supabase/server";
+import { Dot } from "@/components/category-picker";
 
 function snippet(text: string, q: string, len = 220): string {
   const i = text.toLowerCase().indexOf(q.toLowerCase());
@@ -15,14 +16,30 @@ function Mark({ text, q }: { text: string; q: string }) {
   return <>{parts.map((p, i) => (p.toLowerCase() === q.toLowerCase() ? <mark key={i} className="mark text-inherit">{p}</mark> : p))}</>;
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const q = ((await searchParams).q ?? "").trim();
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; c?: string }> }) {
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+  const c = sp.c ?? "";
   const { supabase, profile } = await requireUser();
-  let results: SearchResult[] = [];
+  const categories = await getCategories(supabase);
+  let all: SearchResult[] = [];
   if (q) {
     const { data } = await supabase.rpc("search_content", { q });
-    results = (data ?? []) as SearchResult[];
+    all = (data ?? []) as SearchResult[];
   }
+  // Category filter: only highlights in that category (or with none).
+  const results = !c ? all : all.filter((r) => r.kind === "highlight" && (c === "none" ? !categoriesOf(r, categories).length : (r.category_ids ?? []).includes(c)));
+  const used = categories.filter((cat) => all.some((r) => (r.category_ids ?? []).includes(cat.id)));
+  const chip = (value: string, label: React.ReactNode, active: boolean) => (
+    <Link
+      key={value || "all"}
+      href={`/search?q=${encodeURIComponent(q)}${value ? `&c=${value}` : ""}`}
+      aria-current={active ? "true" : undefined}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-xs ${active ? "border-[var(--text)] bg-[var(--text)] text-[var(--bg)]" : "bordered hover:bg-black/5 dark:hover:bg-white/5"}`}
+    >
+      {label}
+    </Link>
+  );
   return (
     <div className="mx-auto max-w-3xl">
       <Link href="/day/today" className="muted mb-3 inline-flex items-center gap-1 text-sm hover:underline">
@@ -31,6 +48,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </Link>
       <h1 className="mb-1 text-2xl font-semibold">Search</h1>
       <p className="muted mb-6 text-sm">{q ? `${results.length} result${results.length === 1 ? "" : "s"} for “${q}”` : "Type in the search box to find highlights and notes."}</p>
+      {q && used.length > 0 && (
+        <div className="mb-5 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by category">
+          {chip("", "All", !c)}
+          {used.map((cat) => chip(cat.id, <><Dot color={cat.color} />{cat.name}</>, c === cat.id))}
+          {chip("none", "Uncategorised", c === "none")}
+        </div>
+      )}
       <ul className="space-y-3">
         {results.map((r) => {
           const day = localDay(r.created_at, profile.timezone);
@@ -47,6 +71,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                   <Mark text={snippet(r.body, q)} q={q} />
                 </p>
                 {r.note && <p className="muted mt-2 text-sm"><Mark text={snippet(r.note, q, 160)} q={q} /></p>}
+                {categoriesOf(r, categories).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {categoriesOf(r, categories).map((cat) => (
+                      <span key={cat.id} className="bordered inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs"><Dot color={cat.color} />{cat.name}</span>
+                    ))}
+                  </div>
+                )}
               </Link>
             </li>
           );

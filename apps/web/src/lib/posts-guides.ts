@@ -30,7 +30,7 @@ export const GUIDE_POSTS: Post[] = [
       {
         heading: "The short answer",
         paragraphs: [
-          "To highlight a web page and keep the highlight, install a highlighter extension such as Gather, select the text, and click Save Highlight. The highlight stays on the page when you come back, and it is saved to a library you can search.",
+          "To highlight a web page and keep the highlight, install a highlighter extension such as Gather, select the text, and click Save. The highlight stays on the page when you come back, and it is saved to a library you can search.",
           "If you only need to point someone at a passage once, Chrome's built-in \"Copy link to highlight\" is enough. Both methods are explained below.",
         ],
       },
@@ -57,9 +57,10 @@ export const GUIDE_POSTS: Post[] = [
           "A highlighter extension adds a real highlighter to every page. The good ones save each highlight to your account and redraw it whenever you revisit the page. Here is how it works with Gather, a free Chrome extension:",
         ],
         list: [
-          "Install Gather from the Chrome Web Store and sign in with Google.",
+          "Install Gather from the Chrome Web Store. You can start right away; sign in with Google when you want your highlights synced.",
           "Select any text. A small toolbar appears next to your selection.",
-          "Click Save Highlight to mark it, or Add Note to write a thought beside it.",
+          "Click Save to mark it, Note to write a thought beside it, or 🏷 Category to file it in a colour-coded category.",
+          "Open the Gather side panel (toolbar icon or Alt+G) to see, search and edit every highlight on the page.",
           "Click a highlight any time to read or edit your note, or to remove it.",
           "Come back to the page later and your highlights are painted back where you left them.",
         ],
@@ -125,7 +126,7 @@ export const GUIDE_POSTS: Post[] = [
         paragraphs: [
           "Gather is a free Chrome extension focused on one job: keep what matters from anything you read, and make it easy to find later. Highlights are redrawn when you revisit a page, notes sit beside the passage, and every highlight lands in a library organised by date and website, with full-text search across highlights and notes.",
           "It draws highlights using the browser's own highlight API rather than changing the page's HTML, so it does not break web apps. Your library is private; there is no social feed.",
-          "Choose Gather if you want a simple, private highlighter with a strong \"find it later\" library. Look elsewhere if you need PDF highlighting, multiple highlight colours, or public sharing.",
+          "Choose Gather if you want a simple, private highlighter with a strong \"find it later\" library. Highlights can go into colour-coded categories (several per highlight), and a side panel lists, searches and edits them without leaving the page. Look elsewhere if you need PDF highlighting or public sharing.",
         ],
       },
       {

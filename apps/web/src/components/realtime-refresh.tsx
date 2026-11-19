@@ -24,6 +24,7 @@ export function RealtimeRefresh({ userId }: { userId: string }) {
     const channel = supabase
       .channel(`user-${userId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "highlights", filter: `user_id=eq.${userId}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "categories", filter: `user_id=eq.${userId}` }, refresh)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notes", filter: `user_id=eq.${userId}` }, refresh)
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "notes", filter: `user_id=eq.${userId}` }, refresh)
       .subscribe();

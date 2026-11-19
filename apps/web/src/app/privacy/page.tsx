@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <Link href="/login" className="muted text-sm hover:underline">‹ Gather</Link>
       <Link href="/terms" className="muted float-right text-sm hover:underline">Terms of Service</Link>
       <h1 className="mb-1 mt-4 text-3xl font-semibold">Privacy Policy</h1>
-      <p className="muted mb-8 text-sm">Last updated: November 13, 2026</p>
+      <p className="muted mb-8 text-sm">Last updated: November 19, 2026</p>
 
       <div className="space-y-6">
         <section>
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           <h2 className="mb-2 text-lg font-semibold">What we collect</h2>
           <ul className="list-disc space-y-1 pl-5">
             <li><strong>Account details</strong> from Google sign-in: your name, email address and profile picture.</li>
-            <li><strong>Content you choose to save</strong>: the text you highlight, notes you write, and the page&apos;s address, title and website name, plus a little surrounding text so the highlight can be found again on the page.</li>
+            <li><strong>Content you choose to save</strong>: the text you highlight, notes you write, categories you create (name and colour), and the page&apos;s address, title and website name, plus a little surrounding text so the highlight can be found again on the page.</li>
             <li><strong>Settings</strong>, such as your timezone.</li>
           </ul>
           <p className="mt-2">The extension only reads a page&apos;s text when you select text on it, and only to show your saved highlights there. It does not track your browsing history, and nothing is saved unless you click Save.</p>
@@ -35,6 +35,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="mb-2 text-lg font-semibold">Where it is stored</h2>
           <p>Data is stored with Supabase (database and sign-in) and the web app is hosted on Vercel. Every record is private to your account and protected by row-level security, so other users cannot read it. The extension also keeps a local copy in your browser so it works offline.</p>
+          <p className="mt-2"><strong>Using Gather without an account:</strong> if you save highlights before signing in, they are stored only in your browser on this device and are not sent to us. When you sign in, they are uploaded to your account and removed from the local store. Uninstalling the extension before signing in deletes them.</p>
         </section>
 
         <section>

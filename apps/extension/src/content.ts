@@ -1,6 +1,12 @@
-import { canonicalizeUrl, domainOf, findQuote, isSupportedUrl, normalizeText, CONTEXT_LENGTH, type Highlight } from "@highlight/shared";
+import {
+  byRecent, canonicalizeUrl, categoriesOf, domainOf, findQuote, highlightColor, highlightFill, isSupportedUrl, normalizeText,
+  CONTEXT_LENGTH, type Category, type Highlight,
+} from "@highlight/shared";
 import { buildIndex, offsetsToRange, rangeToOffsets, trimOffsets, xpathOf, UI_HOST_ID, type TextIndex } from "./anchor";
-import { send, extensionAlive, type Draft, type ListResult, type SaveResult, type TabMessage, type TabStatus } from "./messages";
+import {
+  send, extensionAlive, JUMP_KEY, type CategoryResult, type Draft, type HighlightPatch, type Jump, type ListResult,
+  type SaveResult, type TabMessage, type TabStatus,
+} from "./messages";
 import { UI_CSS, PAGE_CSS } from "./styles";
 
 declare const __WEB_URL__: string;
@@ -11,21 +17,32 @@ function main() {
   // ---------- State ----------
   let canonical = canonicalizeUrl(location.href);
   let highlights: Highlight[] = [];
+  let categories: Category[] = [];
   const painted = new Map<string, Range>();
   const unresolved = new Set<string>();
-  let signedIn = true;
 
   // ---------- Page-level highlight painting (CSS Custom Highlight API, no DOM changes) ----------
-  const hlA = new Highlight();
-  const hlB = new Highlight();
-  const hlActive = new Highlight();
+  // One registered highlight per colour (two shades each, alternating so neighbours stay distinct).
+  type PaintLayer = InstanceType<typeof window.Highlight>;
+  const layers = new Map<string, PaintLayer>();
+  const hlActive = new window.Highlight();
   hlActive.priority = 1;
-  CSS.highlights.set("hl-ext-a", hlA);
-  CSS.highlights.set("hl-ext-b", hlB);
   CSS.highlights.set("hl-ext-active", hlActive);
   const pageStyle = document.createElement("style");
   pageStyle.textContent = PAGE_CSS;
   (document.head ?? document.documentElement).appendChild(pageStyle);
+
+  function layer(color: string, shade: number): PaintLayer {
+    const key = `gather-${color.slice(1).toLowerCase()}-${shade}`;
+    let hl = layers.get(key);
+    if (!hl) {
+      hl = new window.Highlight();
+      layers.set(key, hl);
+      CSS.highlights.set(key, hl);
+      pageStyle.textContent += `\n::highlight(${key}) { background-color: ${highlightFill(color, shade === 1)}; color: inherit; }`;
+    }
+    return hl;
+  }
 
   // ---------- Shadow-DOM UI host, isolated from page styles ----------
   const host = document.createElement("div");
@@ -37,32 +54,37 @@ function main() {
   shadow.appendChild(style);
   document.documentElement.appendChild(host);
 
-  // ---------- Floating side tab: opens the web app; badge shows page status ----------
+  // ---------- Floating side tab: opens the Gather side panel; badge shows page status ----------
   const fab = document.createElement("button");
   fab.type = "button";
   fab.className = "fab";
-  fab.title = `Open your library at ${new URL(__WEB_URL__).host}`;
   fab.innerHTML = `<svg viewBox="5 3 24 24" width="26" height="26" aria-hidden="true"><path d="M9 22l3-9 7 7-9 3z" fill="#202124"/><path d="M13 12l6-6 7 7-6 6z" fill="#fff" stroke="#202124" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="fab-badge" hidden></span>`;
-  fab.addEventListener("click", () => void send({ type: "openLibrary" }));
+  fab.addEventListener("click", () => void send({ type: "openPanel" }));
   shadow.appendChild(fab);
   const fabBadge = fab.querySelector(".fab-badge") as HTMLElement;
   function updateFab() {
-    let text = "", alert = false, title = `Open your library at ${new URL(__WEB_URL__).host}`;
-    if (!signedIn) { title = "Gather: sign in from the extension popup to sync"; }
-    else if (unresolved.size) { text = "!"; alert = true; title = `Gather: ${unresolved.size} saved highlight(s) could not be found on this page`; }
-    else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open your library at ${new URL(__WEB_URL__).host}`; }
+    let text = "", alert = false, title = "Open the Gather panel";
+    if (unresolved.size) { text = "!"; alert = true; title = `Gather: ${unresolved.size} saved highlight(s) could not be found on this page`; }
+    else if (highlights.length) { text = String(highlights.length); title = `Gather: ${highlights.length} on this page. Click to open the panel.`; }
     fabBadge.hidden = !text;
     fabBadge.textContent = text;
     fabBadge.classList.toggle("alert", alert);
     fab.title = title;
+    fab.setAttribute("aria-label", title);
     // Stay tucked against the edge unless this page has something to show.
     fab.classList.toggle("peek", !text);
   }
 
   let panel: HTMLElement | null = null;
+  let picker: HTMLElement | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
+  function closePicker() {
+    picker?.remove();
+    picker = null;
+  }
   function closePanel() {
+    closePicker();
     panel?.remove();
     panel = null;
     hlActive.clear();
@@ -95,10 +117,17 @@ function main() {
     return b;
   }
 
-  function toast(message: string, action?: { label: string; run: () => void }, ms = action ? 8000 : 2500) {
+  function dot(color: string) {
+    const d = el("span", "dot");
+    d.style.background = color;
+    return d;
+  }
+
+  function toast(message: string, action?: { label: string; run: () => void }, ms = action ? 6000 : 2500) {
     shadow.querySelector(".toast")?.remove();
     clearTimeout(toastTimer);
     const t = el("div", "toast");
+    t.setAttribute("role", "status");
     t.append(el("span", "", message));
     if (action) t.append(button(action.label, () => { t.remove(); action.run(); }, "toast-action"));
     shadow.appendChild(t);
@@ -124,6 +153,7 @@ function main() {
       prefix: index.text.slice(Math.max(0, start - CONTEXT_LENGTH), start),
       suffix: index.text.slice(end, end + CONTEXT_LENGTH),
       anchor_data: { xpath: xpathOf(range.startContainer), textOffset: start },
+      category_ids: [],
     };
   }
 
@@ -142,22 +172,21 @@ function main() {
 
   // ---------- Painting / restore ----------
   function repaint() {
-    hlA.clear(); hlB.clear();
+    for (const hl of layers.values()) hl.clear();
     painted.clear(); unresolved.clear();
     let index: TextIndex | null = null;
-    const ordered: { id: string; range: Range }[] = [];
+    const ordered: { h: Highlight; range: Range }[] = [];
     for (const h of highlights) {
       index ??= buildIndex();
       const m = findQuote(index.text, { exact: h.selected_text, prefix: h.prefix, suffix: h.suffix, hint: h.anchor_data?.textOffset });
       const range = m ? offsetsToRange(index, m.start, m.end) : null;
-      if (range) ordered.push({ id: h.id, range });
+      if (range) ordered.push({ h, range });
       else unresolved.add(h.id);
     }
-    // Alternate two shades in document order so adjacent highlights stay distinguishable.
     ordered.sort((a, b) => a.range.compareBoundaryPoints(Range.START_TO_START, b.range));
-    ordered.forEach(({ id, range }, i) => {
-      painted.set(id, range);
-      (i % 2 ? hlB : hlA).add(range);
+    ordered.forEach(({ h, range }, i) => {
+      painted.set(h.id, range);
+      layer(highlightColor(h, categories), i % 2).add(range);
     });
     void send({ type: "badge", painted: painted.size, unresolved: unresolved.size }).catch(() => {});
     updateFab();
@@ -166,8 +195,8 @@ function main() {
   async function load() {
     try {
       const res = await send<ListResult>({ type: "list", canonicalUrl: canonical });
-      signedIn = res.signedIn;
       highlights = res.highlights ?? [];
+      categories = (res.categories ?? []).sort(byRecent);
     } catch {
       highlights = [];
     }
@@ -182,51 +211,24 @@ function main() {
   }
 
   // ---------- Save / edit / delete ----------
-  async function withAuth<T extends SaveResult>(run: () => Promise<T>, retryLabel: string): Promise<T | null> {
-    const res = await run().catch((e) => ({ ok: false, error: String(e) }) as T);
-    if (!res.ok && "needsAuth" in res && res.needsAuth) {
-      // Keep the captured draft in this closure; resume after sign-in.
-      toast("Sign in with Google to save highlights.", {
-        label: "Sign in",
-        run: async () => {
-          const auth = await send<{ ok: boolean; error?: string }>({ type: "signIn" });
-          if (!auth.ok) { toast(auth.error ?? "Sign-in failed."); return; }
-          signedIn = true;
-          await load();
-          toast(`Signed in. ${retryLabel}…`);
-          const again = await run();
-          if (again.ok) finishSave(again);
-          else toast(("error" in again && again.error) || "Could not save.");
-        },
-      });
-      return null;
-    }
-    if (!res.ok) { toast(("error" in res && res.error) || "Something went wrong."); return null; }
-    return res;
-  }
-
-  function finishSave(res: Extract<SaveResult, { ok: true }>) {
-    upsertLocal(res.highlight);
-    if (res.existing) toast("Already highlighted. You can edit its note.");
-    else if (res.queued) toast("Saved offline. It will sync when you're back online.");
-    else void showSavedToast();
-  }
-
-  async function showSavedToast() {
-    toast("Highlight saved", { label: "View in library", run: () => void send({ type: "openLibrary" }) }, 5000);
-  }
-
   async function saveDraft(draft: Draft) {
-    const res = await withAuth(() => send<SaveResult>({ type: "save", draft }), "Saving your highlight");
-    if (res && res.ok) finishSave(res);
+    const res = await send<SaveResult>({ type: "save", draft }).catch((e) => ({ ok: false, error: String(e) }) as SaveResult);
+    if (!res.ok) { toast(res.error || "Could not save."); return; }
+    upsertLocal(res.highlight);
+    if (res.existing) toast("Already highlighted. Click it to edit.");
+    else if (res.queued) toast("Saved offline. It will sync when you're back online.");
+    else {
+      const cats = categoriesOf(res.highlight, categories);
+      const label = cats.length ? `Saved to ${cats.map((c) => c.name).join(", ")}` : "Highlight saved";
+      toast(label, { label: res.local ? "Open panel" : "View in library", run: () => void send({ type: res.local ? "openPanel" : "openLibrary" }) }, 5000);
+    }
   }
 
-  async function updateNote(h: Highlight, note: string) {
-    const res = await withAuth(() => send<SaveResult>({ type: "update", id: h.id, note: note.trim() || null }), "Updating note");
-    if (res && res.ok) {
-      upsertLocal({ ...h, note: note.trim() || null });
-      toast(res.queued ? "Note saved offline. It will sync later." : "Note updated");
-    }
+  async function patchHighlight(h: Highlight, patch: HighlightPatch, message?: string) {
+    upsertLocal({ ...h, ...patch }); // feel instant; the background confirms
+    const res = await send<SaveResult>({ type: "update", id: h.id, patch });
+    if (!res.ok) { toast(res.error || "Could not update the highlight."); void load(); return; }
+    if (message) toast(res.queued ? `${message} offline. It will sync later.` : message);
   }
 
   async function deleteHighlight(h: Highlight) {
@@ -234,7 +236,130 @@ function main() {
     if (!res.ok) { toast("Could not delete the highlight."); return; }
     highlights = highlights.filter((x) => x.id !== h.id);
     repaint();
-    toast("Highlight removed");
+    toast("Highlight deleted", {
+      label: "Undo",
+      run: async () => {
+        const r = await send<SaveResult>({ type: "restore", highlight: h });
+        if (r.ok) upsertLocal(h);
+      },
+    });
+  }
+
+  async function copyHighlight(h: Highlight) {
+    const parts = [`“${h.selected_text.trim()}”`];
+    if (h.note?.trim()) parts.push(`Note: ${h.note.trim()}`);
+    parts.push(`— ${h.page_title || h.domain}\n${h.source_url}`);
+    try { await navigator.clipboard.writeText(parts.join("\n\n")); toast("Copied"); }
+    catch { toast("Could not copy on this page."); }
+  }
+
+  async function createCategory(name: string): Promise<Category | null> {
+    const res = await send<CategoryResult>({ type: "createCategory", name });
+    if (!res.ok) { toast(res.error); return null; }
+    if (!categories.some((c) => c.id === res.category.id)) categories = [res.category, ...categories];
+    return res.category;
+  }
+
+  // ---------- Category picker ----------
+  /**
+   * New highlight: clicking a category saves straight into it; ticking boxes picks several, then Save.
+   * Existing highlight: every click toggles that category immediately.
+   */
+  function openPicker(anchor: DOMRect, opts: { selected: string[]; mode: "new" | "existing"; onApply: (ids: string[]) => void }) {
+    closePicker();
+    const chosen = new Set(opts.selected);
+    const box = el("div", "picker");
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-label", "Choose categories");
+    const input = el("input", "picker-input");
+    input.placeholder = categories.length ? "Search or create a category" : "Name your first category";
+    input.setAttribute("aria-label", "Search or create a category");
+    const listEl = el("div", "picker-list");
+    listEl.setAttribute("role", "listbox");
+    const footer = el("div", "picker-footer");
+    box.append(input, listEl, footer);
+    let active = 0;
+    let items: { run: () => void; toggle?: () => void }[] = [];
+
+    const apply = (ids: string[]) => { closePicker(); opts.onApply(ids); };
+
+    function render() {
+      const q = input.value.trim().toLowerCase();
+      const matches = categories.filter((c) => c.name.toLowerCase().includes(q));
+      const exact = categories.some((c) => c.name.toLowerCase() === q);
+      listEl.replaceChildren();
+      items = [];
+      for (const c of matches) {
+        const row = el("div", "picker-row");
+        row.setAttribute("role", "option");
+        row.setAttribute("aria-selected", String(chosen.has(c.id)));
+        const check = el("button", `check${chosen.has(c.id) ? " on" : ""}`);
+        check.type = "button";
+        check.title = chosen.has(c.id) ? `Remove ${c.name}` : `Also add ${c.name}`;
+        check.setAttribute("aria-label", check.title);
+        check.textContent = chosen.has(c.id) ? "✓" : "";
+        const toggle = () => {
+          if (chosen.has(c.id)) chosen.delete(c.id); else chosen.add(c.id);
+          if (opts.mode === "existing") opts.onApply([...chosen]);
+          render();
+        };
+        const pick = () => (opts.mode === "existing" ? toggle() : apply([c.id]));
+        check.addEventListener("mousedown", (e) => e.preventDefault());
+        check.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
+        row.addEventListener("mousedown", (e) => e.preventDefault());
+        row.addEventListener("click", pick);
+        row.append(dot(c.color), el("span", "picker-name", c.name), check);
+        listEl.append(row);
+        items.push({ run: pick, toggle });
+      }
+      if (q && !exact) {
+        const row = el("div", "picker-row create");
+        row.setAttribute("role", "option");
+        row.append(el("span", "plus", "+"), el("span", "picker-name", `Create “${input.value.trim()}”`));
+        const create = async () => {
+          const c = await createCategory(input.value.trim());
+          if (!c) return;
+          input.value = "";
+          if (opts.mode === "existing") { chosen.add(c.id); opts.onApply([...chosen]); render(); }
+          else if (chosen.size) { chosen.add(c.id); render(); }
+          else apply([c.id]);
+        };
+        row.addEventListener("mousedown", (e) => e.preventDefault());
+        row.addEventListener("click", () => void create());
+        listEl.append(row);
+        items.push({ run: () => void create() });
+      }
+      if (!items.length) listEl.append(el("p", "picker-empty", "Type a name to create a category."));
+      active = Math.min(active, Math.max(0, items.length - 1));
+      [...listEl.querySelectorAll(".picker-row")].forEach((r, i) => r.classList.toggle("active", i === active));
+
+      footer.replaceChildren();
+      if (opts.mode === "new" && chosen.size > 1) {
+        footer.append(button(`Save to ${chosen.size} categories`, () => apply([...chosen]), "btn primary"));
+      } else if (opts.mode === "new" && chosen.size === 1) {
+        footer.append(button("Save", () => apply([...chosen]), "btn primary"));
+      } else if (opts.mode === "existing") {
+        footer.append(button("Done", closePicker, "btn"));
+      }
+      footer.hidden = !footer.childElementCount;
+    }
+
+    input.addEventListener("input", () => { active = 0; render(); });
+    input.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "ArrowDown") { active = Math.min(active + 1, items.length - 1); render(); e.preventDefault(); }
+      else if (e.key === "ArrowUp") { active = Math.max(active - 1, 0); render(); e.preventDefault(); }
+      else if (e.key === "Enter") {
+        e.preventDefault();
+        if (opts.mode === "new" && chosen.size && !input.value.trim()) apply([...chosen]);
+        else items[active]?.run();
+      } else if (e.key === " " && !input.value && items[active]?.toggle) { e.preventDefault(); items[active].toggle!(); }
+      else if (e.key === "Escape") closePicker();
+    });
+    render();
+    picker = box;
+    place(box, anchor);
+    input.focus({ preventScroll: true });
   }
 
   // ---------- UI panels ----------
@@ -243,19 +368,20 @@ function main() {
     const draft = captureDraft(range, null);
     if (!draft) return;
     const existing = findExisting(range, draft);
+    if (existing) { const r = painted.get(existing.id); if (r) { showPopover(existing, r); return; } }
     const bar = el("div", "toolbar");
-    if (existing) {
-      bar.append(
-        el("span", "label", "✓ Saved"),
-        button(existing.note ? "Edit note" : "Add note", () => showComposer(range, existing)),
-        button("Remove", () => { closePanel(); void deleteHighlight(existing); }, "btn ghost"),
-      );
-    } else {
-      bar.append(
-        button("Save Highlight", () => { closePanel(); clearSelection(); void saveDraft(draft); }, "btn primary"),
-        button("Add Note", () => showComposer(range, null, draft)),
-      );
-    }
+    const categoryBtn = button("🏷 Category", () => {
+      openPicker(bar.getBoundingClientRect(), {
+        selected: [], mode: "new",
+        onApply: (ids) => { closePanel(); clearSelection(); void saveDraft({ ...draft, category_ids: ids }); },
+      });
+    });
+    categoryBtn.title = "Save into a category";
+    bar.append(
+      button("Save", () => { closePanel(); clearSelection(); void saveDraft(draft); }, "btn primary"),
+      button("Note", () => showComposer(range, null, draft)),
+      categoryBtn,
+    );
     panel = bar;
     place(bar, range.getBoundingClientRect());
   }
@@ -275,7 +401,7 @@ function main() {
     const submit = () => {
       closePanel();
       clearSelection();
-      if (existing) void updateNote(existing, ta.value);
+      if (existing) void patchHighlight(existing, { note: ta.value.trim() || null }, "Note saved");
       else if (draft) void saveDraft({ ...draft, note: ta.value.trim() || null });
     };
     ta.addEventListener("keydown", (e) => {
@@ -291,15 +417,31 @@ function main() {
     ta.focus();
   }
 
+  /** Clicked an existing highlight: its categories, note, and Category / Note / Copy / Delete. */
   function showPopover(h: Highlight, range: Range) {
     closePanel();
     hlActive.add(range);
     const pop = el("div", "composer");
+    const cats = categoriesOf(h, categories);
+    if (cats.length) {
+      const chips = el("div", "chips");
+      for (const c of cats) { const chip = el("span", "chip"); chip.append(dot(c.color), document.createTextNode(c.name)); chips.append(chip); }
+      pop.append(chips);
+    }
     pop.append(el("p", h.note ? "note" : "note muted", h.note || "No note yet."));
-    const actions = el("div", "actions");
+    const actions = el("div", "actions spread");
+    const catBtn = button("🏷 Category", () => {
+      let current = h;
+      openPicker(pop.getBoundingClientRect(), {
+        selected: h.category_ids ?? [], mode: "existing",
+        onApply: (ids) => { current = { ...current, category_ids: ids }; void patchHighlight(current, { category_ids: ids }); },
+      });
+    });
     actions.append(
-      button("Remove", () => { closePanel(); void deleteHighlight(h); }, "btn ghost"),
-      button(h.note ? "Edit note" : "Add note", () => showComposer(range, h), "btn primary"),
+      catBtn,
+      button(h.note ? "Edit note" : "Add note", () => showComposer(range, h)),
+      button("Copy", () => { closePanel(); void copyHighlight(h); }),
+      button("Delete", () => { closePanel(); void deleteHighlight(h); }, "btn ghost"),
     );
     pop.append(actions);
     panel = pop;
@@ -308,6 +450,28 @@ function main() {
 
   function clearSelection() {
     window.getSelection()?.removeAllRanges();
+  }
+
+  /** Scroll a highlight into view and flash it (from the side panel). */
+  function scrollToHighlight(id: string): boolean {
+    const r = painted.get(id);
+    if (!r) return false;
+    const target = r.startContainer.nodeType === Node.ELEMENT_NODE ? (r.startContainer as Element) : r.startContainer.parentElement;
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    hlActive.clear();
+    hlActive.add(r);
+    setTimeout(() => { if (!panel) hlActive.clear(); }, 1600);
+    return true;
+  }
+
+  /** Opened from the side panel's "All" view: jump to the chosen highlight once it is painted. */
+  async function consumeJump() {
+    try {
+      const jump = (await chrome.storage.local.get(JUMP_KEY))[JUMP_KEY] as Jump | undefined;
+      if (!jump || jump.canonical !== canonical || Date.now() - jump.at > 60_000) return;
+      await chrome.storage.local.remove(JUMP_KEY);
+      if (!scrollToHighlight(jump.id)) setTimeout(() => scrollToHighlight(jump.id), 1500);
+    } catch { /* orphaned */ }
   }
 
   // ---------- Events ----------
@@ -325,7 +489,6 @@ function main() {
       if (!sel || sel.isCollapsed || sel.rangeCount === 0 || !sel.toString().trim()) return;
       const range = sel.getRangeAt(0);
       if (isEditable(range.commonAncestorContainer)) return;
-      // Signed-out users still get the toolbar; saving prompts sign-in and keeps the draft.
       showToolbar(range.cloneRange());
     }, 10);
   }
@@ -337,10 +500,10 @@ function main() {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); }, true);
   document.addEventListener("selectionchange", () => {
     const sel = window.getSelection();
-    if (panel?.classList.contains("toolbar") && (!sel || sel.isCollapsed)) closePanel();
+    if (panel?.classList.contains("toolbar") && !picker && (!sel || sel.isCollapsed)) closePanel();
   });
 
-  // Click on a saved highlight to see its note.
+  // Click on a saved highlight to see its note and categories.
   document.addEventListener("click", (e) => {
     if (isInsideUI(e) || painted.size === 0) return;
     const sel = window.getSelection();
@@ -362,7 +525,7 @@ function main() {
   // Re-anchor when the page mutates (SPAs, lazy content), debounced.
   let mutationTimer: ReturnType<typeof setTimeout> | undefined;
   new MutationObserver((records) => {
-    if (records.every((r) => host.contains(r.target) || r.target === pageStyle)) return;
+    if (records.every((r) => host.contains(r.target) || r.target === pageStyle || pageStyle.contains(r.target))) return;
     if (highlights.length === 0) return;
     clearTimeout(mutationTimer);
     mutationTimer = setTimeout(() => {
@@ -384,7 +547,7 @@ function main() {
     }
   }, 1000);
 
-  // Pick up edits and deletions made in the web app.
+  // Pick up edits and deletions made in the web app or side panel.
   document.addEventListener("visibilitychange", () => {
     if (!extensionAlive()) { teardown(); return; }
     if (document.visibilityState === "visible") void load();
@@ -395,12 +558,14 @@ function main() {
     clearInterval(urlTimer);
     host.remove();
     pageStyle.remove();
-    hlA.clear(); hlB.clear(); hlActive.clear();
+    for (const [key, hl] of layers) { hl.clear(); CSS.highlights.delete(key); }
+    hlActive.clear();
   }
 
   chrome.runtime.onMessage.addListener((msg: TabMessage, _sender, reply) => {
     if (msg.type === "refresh") void load();
-    if (msg.type === "status") reply({ painted: painted.size, unresolved: unresolved.size, total: highlights.length } satisfies TabStatus);
+    if (msg.type === "status") reply({ painted: painted.size, unresolved: unresolved.size, total: highlights.length, unresolvedIds: [...unresolved] } satisfies TabStatus);
+    if (msg.type === "scrollTo") reply(scrollToHighlight(msg.id));
   });
 
   // On the Gather website: if the extension isn't signed in yet, borrow the website's sign-in.
@@ -417,13 +582,11 @@ function main() {
       if (e.source !== window || e.origin !== location.origin || e.data?.source !== "gather-web") return;
       if (e.data.type === "bridgeReady") void askForSession();
       if (e.data.type === "sessionToken" && typeof e.data.token_hash === "string") {
-        void send<{ ok: boolean }>({ type: "adoptSession", tokenHash: e.data.token_hash }).then((r) => {
-          if (r?.ok) { signedIn = true; void load(); }
-        });
+        void send<{ ok: boolean }>({ type: "adoptSession", tokenHash: e.data.token_hash }).then((r) => { if (r?.ok) void load(); });
       }
     });
     void askForSession();
   }
 
-  void load();
+  void load().then(consumeJump);
 }

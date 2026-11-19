@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to Gather</title>
+  <style>
+    :root { --bg:#fafafa; --card:#fff; --text:#202124; --muted:#5f6368; --border:#e3e5e8; --accent:#fbbc04; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#1b1c1f; --card:#26272b; --text:#e8eaed; --muted:#9aa0a6; --border:#3c4043; } }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; background:var(--bg); color:var(--text); font:16px/1.6 Inter, system-ui, "Segoe UI", sans-serif; }
+    .card { max-width:560px; width:100%; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px 32px; text-align:center; }
+    img { width:56px; height:56px; }
+    h1 { margin:16px 0 4px; font-size:28px; }
+    .tag { margin:0; color:var(--muted); }
+    .primary { margin-top:28px; border:0; background:var(--accent); color:#202124; font:inherit; font-weight:600; padding:12px 24px; border-radius:999px; cursor:pointer; }
+    .primary:hover { filter:brightness(1.05); }
+    .primary:focus-visible { outline:3px solid var(--text); outline-offset:2px; }
+    ol { text-align:left; margin:28px auto 0; padding-left:22px; max-width:420px; color:var(--muted); }
+    ol li { margin:6px 0; }
+    ol strong { color:var(--text); }
+    .note { margin-top:24px; font-size:14px; color:var(--muted); }
+    #status { min-height:1.6em; margin-top:10px; font-size:14px; color:var(--muted); }
+    a { color:inherit; font-weight:600; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img src="icons/128.png" alt="" />
+    <h1>Welcome to Gather</h1>
+    <p class="tag">Keep what matters. Find it later.</p>
+    <button id="open" class="primary">Open the Gather panel →</button>
+    <p id="status" role="status"></p>
+    <ol>
+      <li>Open any article and <strong>select some text</strong>.</li>
+      <li>Click <strong>Save</strong>, or <strong>🏷 Category</strong> to file it.</li>
+      <li>Everything appears in the <strong>Gather panel</strong>. Open it any time from the toolbar icon or with <strong>Alt+G</strong>.</li>
+    </ol>
+    <p class="note">No account needed. Sign in from the panel whenever you want your highlights saved to your library and synced.</p>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

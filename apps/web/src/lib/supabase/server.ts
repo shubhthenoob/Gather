@@ -40,3 +40,9 @@ export const requireUser = cache(async () => {
     profile: (profile ?? { id: user.id, email: user.email ?? null, name: null, timezone: "UTC" }) as Profile,
   };
 });
+
+/** The user's categories, most recently used first. Empty if the categories migration hasn't run yet. */
+export async function getCategories(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data, error } = await supabase.from("categories").select("*").order("last_used_at", { ascending: false });
+  return error ? [] : ((data ?? []) as import("@highlight/shared").Category[]);
+}

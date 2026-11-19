@@ -1,9 +1,21 @@
 "use client";
-import { useState, useTransition } from "react";
-import { formatTime, type Highlight } from "@highlight/shared";
+import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
+import { categoriesOf, formatTime, highlightColor, highlightFill, type Category, type Highlight } from "@highlight/shared";
 import { deleteHighlight, updateHighlightNote } from "@/app/actions";
+import { CategoryPicker, Dot } from "./category-picker";
 
-export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight; timezone: string }) {
+export function HighlightCard({ highlight: h, timezone, categories = [] }: { highlight: Highlight; timezone: string; categories?: Category[] }) {
+  const [ids, setIds] = useState(h.category_ids ?? []);
+  const [known, setKnown] = useState(categories);
+  const [picking, setPicking] = useState(false);
+  // Server refreshes (realtime, other devices) replace the optimistic state.
+  const serverIds = (h.category_ids ?? []).join(",");
+  useEffect(() => { setIds(serverIds ? serverIds.split(",") : []); }, [serverIds]);
+  useEffect(() => { setKnown(categories); }, [categories]);
+  const shown = { ...h, category_ids: ids };
+  const cats = categoriesOf(shown, known);
+  const color = highlightColor(shown, known);
   const [editing, setEditing] = useState(false);
   const [note, setNote] = useState(h.note ?? "");
   const [pending, start] = useTransition();
@@ -42,7 +54,17 @@ export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight
 
   return (
     <article id={`h-${h.id}`} className={`card group mb-4 break-inside-avoid p-4 ${pending ? "opacity-60" : ""}`}>
-      <p className="whitespace-pre-wrap text-[15px] leading-relaxed"><span className="mark">{h.selected_text}</span></p>
+      <p className="whitespace-pre-wrap text-[15px] leading-relaxed"><span className="mark" style={{ background: highlightFill(color) }}>{h.selected_text}</span></p>
+
+      {cats.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {cats.map((c) => (
+            <Link key={c.id} href={`/categories/${c.id}`} className="bordered inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs hover:bg-black/5 dark:hover:bg-white/10">
+              <Dot color={c.color} />{c.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {editing ? (
         <div className="mt-3">
@@ -77,7 +99,19 @@ export function HighlightCard({ highlight: h, timezone }: { highlight: Highlight
           <span className="block truncate font-medium">{h.page_title || h.domain}</span>
           <span className="muted">{h.domain} · {formatTime(h.created_at, timezone)}</span>
         </a>
-        <div className={`flex shrink-0 items-center gap-1 transition-opacity ${copied ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100"}`}>
+        <div className={`relative flex shrink-0 items-center gap-1 transition-opacity ${copied || picking ? "opacity-100" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100"}`}>
+          <button onClick={() => setPicking(!picking)} title={cats.length ? "Change categories" : "Add category"} aria-label={cats.length ? "Change categories" : "Add category"} aria-expanded={picking} className="muted rounded-full p-1.5 hover:bg-black/5 dark:hover:bg-white/10">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" /><circle cx="7.5" cy="7.5" r="1.5" /></svg>
+          </button>
+          {picking && (
+            <CategoryPicker
+              highlightId={h.id}
+              selected={ids}
+              categories={known}
+              onChange={(next, created) => { setIds(next); if (created) setKnown((k) => (k.some((c) => c.id === created.id) ? k : [created, ...k])); }}
+              onClose={() => setPicking(false)}
+            />
+          )}
           <button onClick={copy} title={copied ? "Copied" : "Copy highlight"} aria-label="Copy highlight" className={`flex items-center gap-1 rounded-full p-1.5 text-xs hover:bg-black/5 dark:hover:bg-white/10 ${copied ? "text-[var(--accent)]" : "muted"}`}>
             {copied ? (
               <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg><span className="font-medium">Copied</span></>

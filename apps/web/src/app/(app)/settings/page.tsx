@@ -28,7 +28,7 @@ export default async function SettingsPage() {
 
       <section className="card p-5">
         <h2 className="font-medium">Chrome extension</h2>
-        <p className="muted text-sm">Sign in from the extension popup with the same Google account ({user.email}). Highlights sync automatically.</p>
+        <p className="muted text-sm">Sign in from the Gather side panel (click the Gather icon in Chrome's toolbar) with the same Google account ({user.email}). Highlights sync automatically.</p>
       </section>
 
       <section className="card flex items-center justify-between p-5">

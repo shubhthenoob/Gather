@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { dayBounds, formatDay, groupBySite, isValidDay, todayIn, type Highlight, type Note } from "@highlight/shared";
-import { requireUser } from "@/lib/supabase/server";
+import { getCategories, requireUser } from "@/lib/supabase/server";
 import { HighlightCard } from "@/components/highlight-card";
 import { NoteCard } from "@/components/note-card";
 import { NewNoteButton } from "@/components/new-note-button";
@@ -14,9 +14,10 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   if (!isValidDay(day)) notFound();
 
   const { start, end } = dayBounds(day, tz);
-  const [h, n] = await Promise.all([
+  const [h, n, categories] = await Promise.all([
     supabase.from("highlights").select("*").gte("created_at", start).lt("created_at", end).order("created_at", { ascending: false }),
     supabase.from("notes").select("*").gte("created_at", start).lt("created_at", end).order("created_at", { ascending: false }),
+    getCategories(supabase),
   ]);
   const highlights = (h.data ?? []) as Highlight[];
   const notes = (n.data ?? []) as Note[];
@@ -43,7 +44,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
       {highlights.length === 0 && notes.length === 0 && (
         <div className="muted card p-10 text-center text-sm">
           {isToday
-            ? "Nothing saved yet today. Select text on any page and click Save Highlight, or start a note."
+            ? "Nothing saved yet today. Select text on any page and click Save, or start a note."
             : "Nothing was saved on this day."}
         </div>
       )}
@@ -56,7 +57,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
             <span className="muted font-normal">· {g.highlights.length}</span>
           </h2>
           <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
-            {g.highlights.map((x) => <HighlightCard key={x.id} highlight={x} timezone={tz} />)}
+            {g.highlights.map((x) => <HighlightCard key={x.id} highlight={x} timezone={tz} categories={categories} />)}
           </div>
         </section>
       ))}
