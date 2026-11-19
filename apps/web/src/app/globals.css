@@ -34,3 +34,16 @@ html, body { background: var(--bg); color: var(--text); }
 :target { outline: 2px solid var(--accent); outline-offset: 2px; scroll-margin-top: 80px; }
 textarea, input { background: transparent; color: inherit; }
 textarea:focus, input:focus { outline: none; }
+
+/* Navigation progress bar */
+@keyframes nav-grow { from { width: 0; } 10% { width: 35%; } to { width: 88%; } }
+.nav-progress-grow { animation: nav-grow 8s cubic-bezier(.1, .7, .2, 1) forwards; }
+.nav-progress-done { width: 100%; opacity: 0; transition: opacity .25s ease .12s; }
+
+/* Crisp press feedback on links and buttons */
+a, button { -webkit-tap-highlight-color: transparent; transition-property: background-color, border-color, color, opacity, transform, box-shadow; transition-duration: .12s; }
+a:active, button:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) {
+  a:active, button:active { transform: none; }
+  .nav-progress-grow { animation: none; width: 88%; }
+}

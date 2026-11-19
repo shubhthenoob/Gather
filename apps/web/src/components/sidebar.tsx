@@ -45,14 +45,20 @@ export function SearchBox() {
 export function Sidebar(props: { days: DayPage[]; categories?: Category[]; timezone: string; name: string; email: string; avatar: string | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  // Highlight the clicked item immediately, before the next page arrives.
+  const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => setPending(null), [pathname]);
   const today = todayIn(props.timezone);
   const pastDays = props.days.filter((d) => d.day !== today);
-  const active = (href: string) => pathname === href || (href === `/day/${today}` && pathname === "/day/today") || (href === "/categories" && pathname === "/categories/uncategorised");
+  const active = (href: string) => {
+    if (pending) return pending === href;
+    return pathname === href || (href === "/day/today" && pathname === `/day/${today}`) || (href === "/categories" && pathname === "/categories/uncategorised");
+  };
   const item = (href: string, label: React.ReactNode, count?: number) => (
     <Link
       key={href}
       href={href}
-      onClick={() => setOpen(false)}
+      onClick={(e) => { setOpen(false); if (!e.metaKey && !e.ctrlKey && !e.shiftKey && href !== pathname) setPending(href); }}
       className={`flex items-center justify-between rounded-r-full py-1.5 pl-4 pr-3 text-sm ${active(href) ? "bg-[var(--mark)] font-medium" : "hover:bg-black/5 dark:hover:bg-white/5"}`}
     >
       <span className="truncate">{label}</span>

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Sidebar, SearchBox } from "@/components/sidebar";
 import { RealtimeRefresh } from "@/components/realtime-refresh";
 import { ExtensionBridge } from "@/components/extension-bridge";
+import { NavProgress } from "@/components/nav-progress";
 import type { DayPage } from "@highlight/shared";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
         <main className="min-w-0 flex-1 px-4 py-6 md:px-10">{children}</main>
       </div>
+      <Suspense><NavProgress /></Suspense>
       <RealtimeRefresh userId={user.id} />
       <ExtensionBridge />
     </div>
