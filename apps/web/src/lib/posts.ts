@@ -12,6 +12,7 @@ export interface Post {
 
 import { EXTRA_POSTS } from "./posts-extra";
 import { GUIDE_POSTS } from "./posts-guides";
+import { FEATURE_POSTS } from "./posts-features";
 
 const BASE_POSTS: Post[] = [
   {
@@ -153,7 +154,7 @@ const BASE_POSTS: Post[] = [
 ];
 
 /** All articles, newest first. */
-export const POSTS: Post[] = [...GUIDE_POSTS, ...EXTRA_POSTS, ...BASE_POSTS].sort((a, b) => b.date.localeCompare(a.date));
+export const POSTS: Post[] = [...FEATURE_POSTS, ...GUIDE_POSTS, ...EXTRA_POSTS, ...BASE_POSTS].sort((a, b) => b.date.localeCompare(a.date));
 
 export function getPost(slug: string): Post | undefined {
   return POSTS.find((p) => p.slug === slug);
