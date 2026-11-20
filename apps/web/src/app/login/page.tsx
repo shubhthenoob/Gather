@@ -4,7 +4,7 @@ import { SignInButton } from "./sign-in-button";
 const STEPS = [
   { title: "Select text on any page", body: "Highlight a passage while you read, then click Save. Add a note or a category if you like." },
   { title: "It lands here, by date", body: "Every highlight is saved to this library, grouped by day and by website." },
-  { title: "Find it later", body: "Search your highlights and notes, or open the purple tab on the right edge of any page." },
+  { title: "Find it later", body: "Search and filter by category here, or open the side panel on any page with Alt+G." },
 ];
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; welcome?: string }> }) {

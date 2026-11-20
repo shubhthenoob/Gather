@@ -16,7 +16,9 @@ export const metadata: Metadata = {
 const FEATURES = [
   { title: "Highlight on any page", body: "Select text on any website and save it in one click. Your highlights reappear whenever you come back to the page." },
   { title: "Notes beside your highlights", body: "Add a thought while it's fresh. Notes sit right next to the text they belong to." },
-  { title: "Organised for you", body: "Everything lands in a library sorted by day and by website. No folders, no tags, no filing." },
+  { title: "Organised for you", body: "Everything lands in a library sorted by day and by website. Add categories only if you want them." },
+  { title: "Colour categories", body: "File highlights into categories like Research or Recipes, each with its own colour. One highlight can sit in several." },
+  { title: "Side panel", body: "See this page's highlights, filter by category, search, edit and copy without leaving the page. Press Alt+G." },
   { title: "Search everything", body: "Find any highlight or note in seconds by a word you remember, the site, or the day you read it." },
   { title: "Copy with the source", body: "Copy a quote with your note and its link attached, ready to paste into a doc or message." },
   { title: "Private by default", body: "Your library is yours alone. Nothing is saved unless you click Save, and you can export it all as Markdown." },
@@ -24,8 +26,9 @@ const FEATURES = [
 
 const FAQ = [
   { q: "Is Gather free?", a: "Yes. Gather is free to install and use." },
+  { q: "Do I need an account?", a: "No. You can highlight and categorise without signing in. Sign in with Google to sync your highlights and open them on any computer." },
   { q: "Does Gather change the websites I highlight?", a: "No. Highlights are drawn on top of the page without modifying it, so sites keep working exactly as before." },
-  { q: "Where are my highlights stored?", a: "In your private Gather library at gatherme.vercel.app, tied to your Google account. Only you can see it." },
+  { q: "Where are my highlights stored?", a: "Without an account, on your own device only. Sign in with Google and they sync to your private Gather library at gatherme.vercel.app, where only you can see them." },
   { q: "Can I export my highlights?", a: "Yes. You can export any day, or everything, as a Markdown file." },
   { q: "Which browsers are supported?", a: "Gather works in Google Chrome and other Chromium browsers that install extensions from the Chrome Web Store, such as Edge and Brave." },
 ];
@@ -83,7 +86,7 @@ export default function LandingPage() {
           {[
             ["Select", "Highlight any text while you read. A small toolbar appears."],
             ["Save", "Click Save, add a note, or pick a category. It is highlighted in that colour on the page."],
-            ["Find", "Open your library to browse by day or search everything you've saved."],
+            ["Find", "Open the side panel or your library to filter by category, browse by day, or search everything."],
           ].map(([t, b], i) => (
             <div key={t} className="card p-6">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] font-bold text-black">{i + 1}</span>

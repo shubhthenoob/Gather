@@ -15,8 +15,8 @@ const STEPS: { title: string; body: React.ReactNode; img?: { src: string; alt: s
     body: <>Open Gather on the <a href={STORE_URL} target="_blank" rel="noopener" className="underline">Chrome Web Store</a> and click <strong>Add to Chrome</strong>. Pin it from the puzzle-piece menu so it&apos;s always one click away.</>,
   },
   {
-    title: "Sign in once",
-    body: <>After installing, a welcome page opens. Click <strong>Continue with Google</strong>. That&apos;s the only setup there is. Your highlights are now saved to your private library.</>,
+    title: "Start right away",
+    body: <>After installing, a welcome page opens the Gather side panel. You can highlight straight away with no account: highlights stay on your device. Click <strong>Sign in with Google</strong> in the panel whenever you want them synced to your private library; anything you saved before is moved across.</>,
   },
   {
     title: "Highlight text on any page",
